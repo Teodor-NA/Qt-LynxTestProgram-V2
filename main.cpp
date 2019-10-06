@@ -1,4 +1,6 @@
-#include <QGuiApplication>
+#include <QApplication>
+#include <QtQuick/QQuickView>
+#include <QtQml/QQmlContext>
 #include <QQmlApplicationEngine>
 
 #include "backend.h"
@@ -7,18 +9,24 @@ int main(int argc, char *argv[])
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
 
-    qmlRegisterType<BackEnd>("backend", 1, 1, "BackEnd");
+    QQuickView viewer;
 
-    QQmlApplicationEngine engine;
-    const QUrl url(QStringLiteral("qrc:/main.qml"));
-    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
-                     &app, [url](QObject *obj, const QUrl &objUrl) {
-        if (!obj && url == objUrl)
-            QCoreApplication::exit(-1);
-    }, Qt::QueuedConnection);
-    engine.load(url);
+    BackEnd backEnd(&viewer);
+
+    viewer.rootContext()->setContextProperty("backEnd", &backEnd);
+
+    QObject::connect(viewer.engine(), &QQmlEngine::quit, &viewer, &QWindow::close);
+
+    viewer.setTitle("Qt-Lynx Test Application");
+    viewer.setSource(QUrl(QStringLiteral("qrc:/main.qml")));
+    viewer.setWidth(1280);
+    viewer.setHeight(720);
+    viewer.setMinimumSize(QSize(720,480));
+    // viewer.show();
+    // viewer.showFullScreen();
+    viewer.show();
 
     return app.exec();
 }

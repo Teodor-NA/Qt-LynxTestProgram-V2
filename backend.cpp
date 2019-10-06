@@ -10,6 +10,8 @@ BackEnd::BackEnd(QObject *parent) :
     _selectedDevice = -1;
     _selectedStruct = -1;
 
+    _fullscreen = false;
+
     connect(_uart.portPointer(), SIGNAL(readyRead()), this, SLOT(readData()));
 }
 
@@ -194,9 +196,9 @@ void BackEnd::selectDevice(int index)
         for (int i = 0; i < _deviceInfoList.at(index - 1).structs.count(); i++)
         {
             this->addStruct(
-                        QString(_deviceInfoList.at(index - 1).structs.at(i).description) +
-                        QString::asprintf(" - 0x%x", _deviceInfoList.at(index - 1).structs.at(i).structId)
-                        );
+                QString(_deviceInfoList.at(index - 1).structs.at(i).description) +
+                QString::asprintf(" - 0x%x", _deviceInfoList.at(index - 1).structs.at(i).structId)
+            );
         }
     }
 }
@@ -353,4 +355,18 @@ LynxId BackEnd::findStructId(int variableIndex)
     }
 
     return LynxId();
+}
+
+void BackEnd::fullscreen()
+{
+    if (_fullscreen)
+    {
+        _fullscreen = false;
+        static_cast<QQuickView *>(parent())->show();
+    }
+    else
+    {
+        _fullscreen = true;
+        static_cast<QQuickView *>(parent())->showFullScreen();
+    }
 }

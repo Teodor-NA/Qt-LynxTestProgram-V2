@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QtDebug>
+#include <QtQuick/QQuickView>
 #include "lynxstructure.h"
 #include "lynxuartqt.h"
 // #include "lightcontrol.h"
@@ -35,6 +36,8 @@ class BackEnd : public QObject
 
     LynxList<LynxDynamicId> _dynamicIds;
     LynxList<AddedStruct> _addedStructs;
+
+    bool _fullscreen;
 
     LynxId findStructId(int variableIndex = -1);
 
@@ -69,6 +72,7 @@ public slots:
     void startPeriodic(unsigned int interval);
     void stopPeriodic();
     void sendVariable(int variableIndex, double value);
+    void fullscreen();
 };
 
 #endif // BACKEND_H

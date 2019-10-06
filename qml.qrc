@@ -1,8 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>LabelInfo.qml</file>
-        <file>VariableModel.qml</file>
-        <file>Frame.qml</file>
+        <file>SelectionWindowForm.ui.qml</file>
+        <file>GraphWindowForm.ui.qml</file>
     </qresource>
 </RCC>
