@@ -3,5 +3,34 @@
         <file>main.qml</file>
         <file>SelectionWindowForm.ui.qml</file>
         <file>GraphWindowForm.ui.qml</file>
+        <file>icons/icons8-add-50.png</file>
+        <file>icons/icons8-add-new-50.png</file>
+        <file>icons/icons8-color-dropper-50.png</file>
+        <file>icons/icons8-delete-50.png</file>
+        <file>icons/icons8-delete-bin-50.png</file>
+        <file>icons/icons8-drag-50.png</file>
+        <file>icons/icons8-engineering-50.png</file>
+        <file>icons/icons8-enlarge-50.png</file>
+        <file>icons/icons8-expand-50.png</file>
+        <file>icons/icons8-folder-50.png</file>
+        <file>icons/icons8-full-screen-50.png</file>
+        <file>icons/icons8-hand-50.png</file>
+        <file>icons/icons8-multiplication-50.png</file>
+        <file>icons/icons8-new-copy-50.png</file>
+        <file>icons/icons8-pause-50.png</file>
+        <file>icons/icons8-play-50.png</file>
+        <file>icons/icons8-plot-50.png</file>
+        <file>icons/icons8-realtime-50.png</file>
+        <file>icons/icons8-reduce-50.png</file>
+        <file>icons/icons8-resize-horizontal-50.png</file>
+        <file>icons/icons8-resize-vertical-50.png</file>
+        <file>icons/icons8-save-50.png</file>
+        <file>icons/icons8-scatter-plot-50.png</file>
+        <file>icons/icons8-tesla-50.png</file>
+        <file>icons/icons8-tesla-model-3-50.png</file>
+        <file>icons/icons8-timer-50.png</file>
+        <file>icons/icons8-zoom-in-50.png</file>
+        <file>icons/icons8-zoom-out-50.png</file>
+        <file>IconButton.qml</file>
     </qresource>
 </RCC>
