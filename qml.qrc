@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>LabelInfo.qml</file>
+        <file>VariableModel.qml</file>
+        <file>Frame.qml</file>
+    </qresource>
+</RCC>
