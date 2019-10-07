@@ -166,7 +166,6 @@ void BackEnd::connectButtonClicked()
         else
             qDebug() << "Open failed";
     }
-
 }
 
 void BackEnd::selectDevice(int index)
