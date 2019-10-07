@@ -14,11 +14,18 @@ Button {
 
         //buttonText: "white"
     }
-    icon.width:Number(pixelSize)
-    icon.height:Number(pixelSize)
+    icon.width: Number(pixelSize)
+    icon.height: Number(pixelSize)
     icon.name: "edit-cut"
     icon.source: "icons/"+filename+".png"
     hoverEnabled: true
+    onHoveredChanged:
+    {
+        if (hovered)
+            palette.button = "lightgrey"
+        else
+            palette.button = "white"
+    }
 
     ToolTip.delay: 500
     ToolTip.timeout: 3000

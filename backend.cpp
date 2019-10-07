@@ -122,6 +122,8 @@ void BackEnd::readData()
 void BackEnd::refreshPortList()
 {
     this->clearPortList();
+    this->addPort("Select port");
+
     _portList = QSerialPortInfo::availablePorts();
 
     QString tempName;

@@ -32,5 +32,17 @@
         <file>icons/icons8-zoom-in-50.png</file>
         <file>icons/icons8-zoom-out-50.png</file>
         <file>IconButton.qml</file>
+        <file>icons/icons8-blind-50.png</file>
+        <file>icons/icons8-connect-50.png</file>
+        <file>icons/icons8-connected-50.png</file>
+        <file>icons/icons8-data-transfer-50.png</file>
+        <file>icons/icons8-day-and-night-50.png</file>
+        <file>icons/icons8-disconnected-50.png</file>
+        <file>icons/icons8-eye-50.png</file>
+        <file>icons/icons8-info-50.png</file>
+        <file>icons/icons8-info-squared-50.png</file>
+        <file>icons/icons8-network-cable-50.png</file>
+        <file>icons/icons8-usb-connected-50.png</file>
+        <file>icons/icons8-separator-50.png</file>
     </qresource>
 </RCC>

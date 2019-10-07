@@ -12,6 +12,7 @@ Item
     {
         target: backEnd
         onAddPort: portListModel.append({ text: portName })
+        onClearPortList: portListModel.clear()
     }
 
     Column
@@ -33,7 +34,7 @@ Item
                 id: portComboBox
                 visible: topRibbon.selectButtonsVisible
                 font.pixelSize: 15
-                width: 200
+                width: 300
                 height: 50
                 model:
                     ListModel
@@ -41,6 +42,50 @@ Item
                         id: portListModel
                         ListElement{text: qsTr("Select port")}
                     }
+                onPressedChanged:
+                {
+                    if(pressed)
+                    {
+                        backEnd.refreshPortList()
+                        portComboBox.currentIndex = 0
+                    }
+                }
+                onCurrentIndexChanged:
+                {
+                    backEnd.portSelected(currentIndex - 1)
+                }
+
+                ToolTip.delay: 500
+                ToolTip.timeout: 3000
+                ToolTip.visible: hovered
+                ToolTip.text: qsTr("Select port")
+
+            }
+
+            IconButton
+            {
+                id: connectButton
+                visible: topRibbon.selectButtonsVisible
+                enabled: portComboBox.currentIndex > 0
+                filename: "icons8-disconnected-50"
+                tooltip: "Connect"
+                onClicked:
+                {
+                    if (backEnd.uartConnected())
+                    {
+                        filename = "icons8-disconnected-50"
+                        tooltip = "Connect"
+                        portComboBox.enabled = true
+                    }
+                    else
+                    {
+                        filename = "icons8-connected-50"
+                        tooltip = "Disonnect"
+                        portComboBox.enabled = false
+                    }
+
+                    backEnd.connectButtonClicked();
+                }
 
             }
 
@@ -53,24 +98,10 @@ Item
 
             IconButton
             {
-                property bool enabled: false
                 visible: topRibbon.graphButtonsVisible
                 filename: "icons8-pause-50"
                 tooltip: "Pause"
-                onClicked:
-                {
-                    if (enabled)
-                    {
-                        enabled = false
-                        filename = "icons8-pause-50"
-                    }
-                    else
-                    {
-                        enabled = true
-                        filename = "icons8-realtime-50"
-                    }
 
-                }
             }
 
             IconButton
@@ -92,6 +123,10 @@ Item
                 visible: topRibbon.graphButtonsVisible
                 filename: "icons8-resize-vertical-50"
                 tooltip: "Autoscale Y"
+            }
+
+            Image {
+                source: "/icons/icons8-separator-50.png"
             }
 
             IconButton

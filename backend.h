@@ -64,7 +64,6 @@ public slots:
     void refreshPortList();
     void portSelected(int index);
     void connectButtonClicked();
-    bool uartConnected() { return _uart.opened(); }
     void selectDevice(int index);
     void selectStruct(int index);
     int generateStruct();
@@ -73,6 +72,7 @@ public slots:
     void stopPeriodic();
     void sendVariable(int variableIndex, double value);
     void fullscreen();
+    bool uartConnected() { return _uart.opened(); }
 };
 
 #endif // BACKEND_H
