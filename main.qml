@@ -87,23 +87,26 @@ Item
                 }
 
             }
-            IconButton{
+
+            IconButton
+            {
                 id:addSignal
                 filename:"icons8-add-new-50"
                 visible: topRibbon.graphButtonsVisible
                 tooltip: "Add signal"
-                onClicked:{
+                onClicked:
+                {
                     scopeView.maxNumberOfSignals=backend.getNumberOfSignals()
                     console.log(backend.getNumberOfSignals())
                     if(scopeView.numberOfSignals<scopeView.maxNumberOfSignals)
                     scopeView.numberOfSignals++
 
                     scopeView.changeSeriesType("line")
-
-
                 }
             }
-            IconButton{
+
+            IconButton
+            {
                 id:removeSignal
                 filename:"icons8-reduce-50"
                 visible: topRibbon.graphButtonsVisible
@@ -116,7 +119,9 @@ Item
 
                 }
             }
-            IconButton{
+
+            IconButton
+            {
                 property bool enabled: false
                 id:linePlot
                 tooltip: "Line Plot"
@@ -136,46 +141,36 @@ Item
                 }
             }
 
-            IconButton{
+            IconButton
+            {
                 id:saveToFile
                 visible: topRibbon.graphButtonsVisible
                 filename:"icons8-save-50"
                 tooltip: "Save to CSV"
                 onClicked:fileDialogWrite.visible = true
             }
-            IconButton{
+
+            IconButton
+            {
                 id:loadFile
                 visible: topRibbon.graphButtonsVisible
                 filename:"icons8-folder-50"
                 tooltip: "Load File"
                 onClicked:fileDialogRead.visible = true
             }
-            IconButton{
+
+            IconButton
+            {
                 visible: topRibbon.graphButtonsVisible
                 filename: "icons8-play-50"
                 tooltip: "Live view"
             }
 
-            IconButton{
-                property bool enabled: false
+            IconButton
+            {
                 visible: topRibbon.graphButtonsVisible
                 filename: "icons8-pause-50"
                 tooltip: "Pause"
-                onClicked:
-                {
-                    if (enabled)
-                    {
-                        enabled = false
-                        filename = "icons8-pause-50"
-                        backend.resumeChartviewRefresh()
-                    }
-                    else
-                    {
-                        enabled = true
-                        filename = "icons8-realtime-50"
-                        backend.pauseChartviewRefresh()
-                    }
-
             }
 
             IconButton{
@@ -276,7 +271,9 @@ Item
             }
         }
     }
-    FileDialog {
+
+    FileDialog
+    {
         id: fileDialogWrite
         title: "Please choose a file"
         fileMode: FileDialog.SaveFile
@@ -289,7 +286,9 @@ Item
             console.log("Canceled")
         }
     }
-    FileDialog {
+
+    FileDialog
+    {
         id: fileDialogRead
         title: "Please choose a file"
         fileMode: FileDialog.OpenFile
@@ -305,5 +304,3 @@ Item
         }
     }
 }
-
-
