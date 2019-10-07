@@ -32,5 +32,6 @@
         <file>icons/icons8-zoom-in-50.png</file>
         <file>icons/icons8-zoom-out-50.png</file>
         <file>IconButton.qml</file>
+        <file>ScopeView.qml</file>
     </qresource>
 </RCC>
