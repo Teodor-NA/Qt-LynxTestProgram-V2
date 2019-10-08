@@ -18,6 +18,15 @@ Item
     Connections
     {
         target: scopeServer
+        onCreateSeries:
+        {
+            if (linePlot.enabled){
+                scopeView.changeSeriesType("scatter");
+            }
+            else{
+                scopeView.changeSeriesType("line");
+            }
+        }
 
         onRefreshChart:
         {
