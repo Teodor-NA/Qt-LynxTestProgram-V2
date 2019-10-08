@@ -59,31 +59,7 @@ ChartView {
 //            openGL = false
 //        }
 //    }
-    Connections {
-        target: backend
 
-        onRefreshChart: {
-            for(var n=0;n<numberOfSignals;n++)
-            {
-                backend.update(chartView.series(n),n);
-            }
-
-
-            if(!chartView.isZoomed())
-            {
-
-                xaxis=new Date()
-                var today = new Date();
-                xaxis_min=new Date(new Date() - deltaX)
-            }
-
-
-        }
-        onReScale:{
-            scopeView.resizeHorizontal()
-            scopeView.autoscale()
-        }
-    }
 
 
 
@@ -284,7 +260,7 @@ function changeSeriesType(type) {
     }
     else
     {
-        for(var n=0; n<numberOfSignals;n++)
+        for(n=0; n<numberOfSignals;n++)
         {
            var series2 = chartView.createSeries(ChartView.SeriesTypeScatter, backend.getSignalText(n), axisX, axisY1);
             series2.markerSize = 2;

@@ -44,5 +44,6 @@
         <file>icons/icons8-network-cable-50.png</file>
         <file>icons/icons8-usb-connected-50.png</file>
         <file>icons/icons8-separator-50.png</file>
+        <file>ScopeView.qml</file>
     </qresource>
 </RCC>

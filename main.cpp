@@ -4,18 +4,22 @@
 #include <QQmlApplicationEngine>
 
 #include "backend.h"
+#include "scopeserver.h"
 
 int main(int argc, char *argv[])
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QCoreApplication::setOrganizationName("LynxDynamics");
 
     QApplication app(argc, argv);
 
     QQuickView viewer;
 
     BackEnd backEnd(&viewer);
+    ScopeServer scopeServer(&viewer);
 
     viewer.rootContext()->setContextProperty("backEnd", &backEnd);
+    viewer.rootContext()->setContextProperty("scopeServer", &scopeServer);
 
     QObject::connect(viewer.engine(), &QQmlEngine::quit, &viewer, &QWindow::close);
 

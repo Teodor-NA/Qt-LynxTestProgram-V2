@@ -1,7 +1,8 @@
 import QtQuick 2.12
 import QtQuick.Window 2.12
 import QtQuick.Controls 2.12
-import Qt.labs.platform 1.1
+import QtQuick.Dialogs 1.2
+// import Qt.labs.platform 1.1
 
 Item
 {
@@ -12,6 +13,36 @@ Item
         target: backEnd
         onAddPort: portListModel.append({ text: portName })
         onClearPortList: portListModel.clear()
+    }
+
+    Connections
+    {
+        target: scopeServer
+
+        onRefreshChart:
+        {
+            // vvv Hvorfor er dette i frontend?? vvv
+            for(var n = 0; n < scopeView.numberOfSignals; n++)
+            {
+                scopeServer.update(chartView.series(n), n);
+            }
+            // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+            if(!scopeView.chartView.isZoomed())
+            {
+
+                xaxis = new Date()
+                var today = new Date();
+                xaxis_min = new Date(new Date() - deltaX)
+            }
+
+
+        }
+        onReScale:
+        {
+            scopeView.resizeHorizontal()
+            scopeView.autoscale()
+        }
     }
 
     Column
@@ -90,59 +121,6 @@ Item
 
             IconButton
             {
-                id:addSignal
-                filename:"icons8-add-new-50"
-                visible: topRibbon.graphButtonsVisible
-                tooltip: "Add signal"
-                onClicked:
-                {
-                    scopeView.maxNumberOfSignals=backend.getNumberOfSignals()
-                    console.log(backend.getNumberOfSignals())
-                    if(scopeView.numberOfSignals<scopeView.maxNumberOfSignals)
-                    scopeView.numberOfSignals++
-
-                    scopeView.changeSeriesType("line")
-                }
-            }
-
-            IconButton
-            {
-                id:removeSignal
-                filename:"icons8-reduce-50"
-                visible: topRibbon.graphButtonsVisible
-                tooltip: "Remove signal"
-                onClicked:{
-                    if(scopeView.numberOfSignals>1)
-                    scopeView.numberOfSignals--
-                    scopeView.changeSeriesType("line")
-
-
-                }
-            }
-
-            IconButton
-            {
-                property bool enabled: false
-                id:linePlot
-                tooltip: "Line Plot"
-                visible: topRibbon.graphButtonsVisible
-                filename: "icons8-plot-50"
-                onClicked:{
-                    if (enabled){
-                        enabled = false
-                        filename = "icons8-plot-50"
-                        onClicked: scopeView.changeSeriesType("scatter");
-                    }
-                    else{
-                        enabled = true
-                        filename = "icons8-scatter-plot-50"
-                        scopeView.changeSeriesType("line");
-                    }
-                }
-            }
-
-            IconButton
-            {
                 id:saveToFile
                 visible: topRibbon.graphButtonsVisible
                 filename:"icons8-save-50"
@@ -157,6 +135,62 @@ Item
                 filename:"icons8-folder-50"
                 tooltip: "Load File"
                 onClicked:fileDialogRead.visible = true
+            }
+
+            Image {
+                source: "/icons/icons8-separator-50.png"
+                visible: topRibbon.graphButtonsVisible
+            }
+
+            IconButton
+            {
+                id:addSignal
+                filename:"icons8-add-new-50"
+                visible: topRibbon.graphButtonsVisible
+                tooltip: "Add signal"
+                onClicked:
+                {
+                    scopeView.maxNumberOfSignals = scopeServer.getNumberOfSignals()
+
+                    if(scopeView.numberOfSignals<scopeView.maxNumberOfSignals)
+                        scopeView.numberOfSignals++
+
+                    scopeView.changeSeriesType("line")
+                }
+            }
+
+            IconButton
+            {
+                id:removeSignal
+                filename:"icons8-reduce-50"
+                visible: topRibbon.graphButtonsVisible
+                tooltip: "Remove signal"
+                onClicked:{
+                    if(scopeView.numberOfSignals>1)
+                        scopeView.numberOfSignals--
+                    scopeView.changeSeriesType("line")
+                }
+            }
+
+            IconButton
+            {
+                property bool enabled: false
+                id: linePlot
+                tooltip: "Line Plot"
+                visible: topRibbon.graphButtonsVisible
+                filename: "icons8-plot-50"
+                onClicked:{
+                    if (enabled){
+                        enabled = false
+                        filename = "icons8-plot-50"
+                        scopeView.changeSeriesType("scatter");
+                    }
+                    else{
+                        enabled = true
+                        filename = "icons8-scatter-plot-50"
+                        scopeView.changeSeriesType("line");
+                    }
+                }
             }
 
             IconButton
@@ -187,7 +221,7 @@ Item
                 visible: topRibbon.graphButtonsVisible
                 filename: "icons8-resize-horizontal-50"
                 tooltip: "Autoscale X"
-                onClicked: resizeHorizontal()//graphPage.scopeView.resizeHorizontal()
+                onClicked: scopeView.resizeHorizontal()//graphPage.scopeView.resizeHorizontal()
             }
 
             IconButton
@@ -226,13 +260,22 @@ Item
             currentIndex: tabBar.currentIndex
             SelectionWindowForm
             {
-                id:selectionPage
+                id: selectionPage
 
 
             }
             GraphWindowForm
             {
-                id:graphPage
+                id: graphPage
+
+                ScopeView
+                {
+                    id: scopeView
+                    x: 1000
+                    y: 0
+                    z: -1
+                    anchors.centerIn: parent
+                }
             }
 
         }
@@ -276,11 +319,11 @@ Item
     {
         id: fileDialogWrite
         title: "Please choose a file"
-        fileMode: FileDialog.SaveFile
-        //folder:   StandardPaths.standardLocations(StandardPaths.PicturesLocation)
+        // fileMode: FileDialog.SaveFile
+        // folder:   StandardPaths.standardLocations(StandardPaths.PicturesLocation)
         nameFilters: [ "Text files (*.csv)" ]
         onAccepted: {
-                backend.writeToCSV(fileDialogWrite.file)
+                scopeServer.writeToCSV(fileDialogWrite.file)
         }
         onRejected: {
             console.log("Canceled")
@@ -291,12 +334,12 @@ Item
     {
         id: fileDialogRead
         title: "Please choose a file"
-        fileMode: FileDialog.OpenFile
-        //folder:   StandardPaths.standardLocations(StandardPaths.PicturesLocation)
+        // fileMode: FileDialog.OpenFile
+        // folder:   StandardPaths.standardLocations(StandardPaths.PicturesLocation)
         nameFilters: [ "Text files (*.csv)" ]
         onAccepted: {
 
-                backend.readFromCSV(fileDialogRead.file)
+                scopeServer.readFromCSV(fileDialogRead.file)
 
         }
         onRejected: {
