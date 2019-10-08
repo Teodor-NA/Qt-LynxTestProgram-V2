@@ -18,29 +18,34 @@ Item
     Connections
     {
         target: scopeServer
+
         onCreateSeries:
         {
-            if (linePlot.enabled){
+
+            if (linePlot.enabled)
+            {
                 scopeView.changeSeriesType("scatter");
+
             }
-            else{
+            else
+            {
                 scopeView.changeSeriesType("line");
             }
         }
 
         onRefreshChart:
         {
-            for(var n = 0; n < scopeView.numberOfSignals; n++)
+            for(var n = 0; n < scopeServer.getNumberOfSignals(); n++)
             {
                 scopeServer.update(scopeView.series(n), n);
             }
 
-            if(!scopeView.isZoomed())
-            {
-                scopeView.xaxis = new Date()
+            //if(!scopeView.isZoomed())
+            //{
+                scopeView.xaxis_max = new Date()
                 var today = new Date();
                 scopeView.xaxis_min = new Date(new Date() - scopeView.deltaX)
-            }
+            //}
         }
         onReScale:
         {
@@ -211,16 +216,22 @@ Item
 
             IconButton
             {
+                property bool enabled: false
                 visible: topRibbon.graphButtonsVisible
                 filename: "icons8-play-50"
                 tooltip: "Live view"
-            }
-
-            IconButton
-            {
-                visible: topRibbon.graphButtonsVisible
-                filename: "icons8-pause-50"
-                tooltip: "Pause"
+                onClicked:{
+                    if (enabled){
+                        enabled = false
+                        filename = "icons8-play-50"
+                        scopeServer.pauseChartviewRefresh();
+                    }
+                    else{
+                        enabled = true
+                        filename = "icons8-pause-50"
+                        scopeServer.resumeChartviewRefresh();
+                    }
+                }
             }
 
             IconButton{
@@ -244,7 +255,7 @@ Item
             {
                 visible: topRibbon.graphButtonsVisible
                 filename: "icons8-resize-vertical-50"
-                tooltip: "Autoscale Y"               
+                tooltip: "Autoscale Y"
                 onClicked: scopeView.autoscale()
             }
 
@@ -289,7 +300,8 @@ Item
                 ScopeView
                 {
                     id: scopeView
-                    anchors.centerIn: parent
+                    anchors.fill: parent
+                   // anchors.centerIn: parent
                 }
             }
 
