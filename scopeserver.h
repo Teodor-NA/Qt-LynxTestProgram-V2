@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QDebug>
 #include <QTimer>
+#include <QTime>
+#include <QList>
 class ScopeServer : public QObject
 {
     Q_OBJECT
