@@ -45,5 +45,7 @@
         <file>icons/icons8-usb-connected-50.png</file>
         <file>icons/icons8-separator-50.png</file>
         <file>ScopeView.qml</file>
+        <file>icons/icons8-update-left-rotation-50.png</file>
+        <file>SelectionView.qml</file>
     </qresource>
 </RCC>

@@ -21,22 +21,17 @@ Item
 
         onRefreshChart:
         {
-            // vvv Hvorfor er dette i frontend?? vvv
             for(var n = 0; n < scopeView.numberOfSignals; n++)
             {
-                scopeServer.update(chartView.series(n), n);
+                scopeServer.update(scopeView.series(n), n);
             }
-            // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-            if(!scopeView.chartView.isZoomed())
+            if(!scopeView.isZoomed())
             {
-
-                xaxis = new Date()
+                scopeView.xaxis = new Date()
                 var today = new Date();
-                xaxis_min = new Date(new Date() - deltaX)
+                scopeView.xaxis_min = new Date(new Date() - scopeView.deltaX)
             }
-
-
         }
         onReScale:
         {
@@ -106,17 +101,29 @@ Item
                         filename = "icons8-disconnected-50"
                         tooltip = "Connect"
                         portComboBox.enabled = true
+                        scanButton.enabled = false
                     }
                     else
                     {
                         filename = "icons8-connected-50"
                         tooltip = "Disonnect"
                         portComboBox.enabled = false
+                        scanButton.enabled = true
                     }
 
                     backEnd.connectButtonClicked();
                 }
 
+            }
+
+            IconButton
+            {
+                id: scanButton
+                visible: topRibbon.selectButtonsVisible
+                filename:"icons8-update-left-rotation-50"
+                tooltip: "Scan for devices"
+                enabled: false
+                onClicked: backEnd.scan()
             }
 
             IconButton
