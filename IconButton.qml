@@ -5,6 +5,7 @@ Button {
     property string filename: ""
     property string tooltip: ""
     property string pixelSize: "50"
+    property string highlightColor: "lightgrey"
 
 
     width: Number(pixelSize)
@@ -22,7 +23,7 @@ Button {
     onHoveredChanged:
     {
         if (hovered)
-            palette.button = "lightgrey"
+            palette.button = highlightColor
         else
             palette.button = "white"
     }

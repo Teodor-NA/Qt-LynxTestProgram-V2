@@ -358,7 +358,7 @@ LynxId BackEnd::findStructId(int variableIndex)
     return LynxId();
 }
 
-void BackEnd::fullscreen()
+void BackEnd::fullscreenButtonClicked()
 {
     if (_fullscreen)
     {
@@ -370,4 +370,6 @@ void BackEnd::fullscreen()
         _fullscreen = true;
         static_cast<QQuickView *>(parent())->showFullScreen();
     }
+
+    emit fullscreenChanged();
 }

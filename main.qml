@@ -144,7 +144,7 @@ Item
 
             IconButton
             {
-                id:addSignal
+                id: addSignal
                 filename:"icons8-add-new-50"
                 visible: topRibbon.graphButtonsVisible
                 tooltip: "Add signal"
@@ -240,13 +240,15 @@ Item
             {
                 filename: "icons8-full-screen-50"
                 tooltip: "Toggle fullscreen/windowed"
-                onClicked: backEnd.fullscreen()
+                onClicked: backEnd.fullscreenButtonClicked()
             }
 
             IconButton
             {
                 filename: "icons8-multiplication-50"
                 tooltip: "Exit"
+                highlightColor: "tomato"
+                visible: backEnd.fullscreen
                 onClicked: Qt.quit()
             }
 
@@ -271,9 +273,6 @@ Item
                 ScopeView
                 {
                     id: scopeView
-                    x: 1000
-                    y: 0
-                    z: -1
                     anchors.centerIn: parent
                 }
             }

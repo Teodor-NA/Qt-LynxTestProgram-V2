@@ -19,6 +19,8 @@ class BackEnd : public QObject
 {
     Q_OBJECT
 
+    Q_PROPERTY(bool fullscreen MEMBER _fullscreen NOTIFY fullscreenChanged)
+
     LynxManager _lynx;
     LynxUartQt _uart;
 
@@ -57,6 +59,7 @@ signals:
     void clearVariableList();
     void addVarable(const QString & description, const QString & index, const QString & type);
     void addVariableValue(int variableIndex, double value);
+    void fullscreenChanged();
 
 public slots:
     void scan();
@@ -71,8 +74,9 @@ public slots:
     void startPeriodic(unsigned int interval);
     void stopPeriodic();
     void sendVariable(int variableIndex, double value);
-    void fullscreen();
     bool uartConnected() { return _uart.opened(); }
+    void fullscreenButtonClicked();
+
 };
 
 #endif // BACKEND_H
