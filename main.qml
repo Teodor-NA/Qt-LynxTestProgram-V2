@@ -13,6 +13,16 @@ Item
         target: backEnd
         onAddPort: portListModel.append({ text: portName })
         onClearPortList: portListModel.clear()
+        onClearDevices: selectionView.clearDevices()
+        onAddDevice: selectionView.addDevice(device)
+        onAddDeviceInfo:
+        {
+            // const QString & description, const QString & id, const QString & version, const QString & count
+            selectionView.deviceDescription = description
+            selectionView.deviceId = id
+            selectionView.version = version
+            selectionView.deviceCount = count
+        }
     }
 
     Connections
@@ -279,7 +289,11 @@ Item
             SelectionWindowForm
             {
                 id: selectionPage
-
+                SelectionView
+                {
+                    id: selectionView
+                    anchors.fill: parent
+                }
 
             }
             GraphWindowForm
