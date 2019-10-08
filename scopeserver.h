@@ -6,6 +6,9 @@
 #include <QTimer>
 #include <QTime>
 #include <QList>
+#include <QAbstractSeries>
+
+QT_CHARTS_USE_NAMESPACE
 class ScopeServer : public QObject
 {
     Q_OBJECT
@@ -37,13 +40,19 @@ signals:
     void createSeries();
 
 public slots:
+    // Return the number of signals that should be logged
+    int getNumberOfSignals() { return signalInformation.count(); }
+
     // Updates the logger list function
     void newDataRecived();//For demo
-    int getNumberOfSignals() { return 0; }
     void writeToCSV(const QString & file);
     void readFromCSV(const QString & file);
     // Starts the chartview refresh emit
-    void resumeChartviewRefresh(){ _haltChartRefresh = false; }
+    void resumeChartviewRefresh()
+    {
+        emit createSeries();
+        _haltChartRefresh = false;
+    }
 
     // Stops the chartview refresh emit and store the current x axis values
     void pauseChartviewRefresh()
@@ -83,6 +92,9 @@ public slots:
         else
             return qint64(logger.at(0).last().x());
     }
+    void update(QAbstractSeries *series,int index);
+    // Get signalText
+    const QString getSignalText(int index) { return signalInformation.at(index).name; }
 };
 
 #endif // SCOPESERVER_H
