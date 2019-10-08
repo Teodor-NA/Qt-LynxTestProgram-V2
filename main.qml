@@ -21,7 +21,7 @@ Item
             selectionView.deviceDescription = description
             selectionView.deviceId = id
             selectionView.version = version
-            selectionView.deviceCount = count
+            selectionView.structCount = count
         }
     }
 
@@ -297,6 +297,7 @@ Item
             height: parent.height - tabBar.height - topRibbon.height
             width: parent.width
             currentIndex: tabBar.currentIndex
+            interactive: false
             SelectionWindowForm
             {
                 id: selectionPage

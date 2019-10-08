@@ -5,8 +5,8 @@ Item {
     // const QString & description, const QString & id, const QString & version, const QString & count
     property string deviceDescription: "No selection"
     property string deviceId: "No selection"
-    property string version: "No selsection"
-    property string deviceCount: "No selection"
+    property string version: "No selection"
+    property string structCount: "No selection"
 
     function clearDevices()
     {
@@ -44,28 +44,48 @@ Item {
 
         }
 
-        DescriptionText
+        Rectangle
         {
-            descripition: "Device name:"
-            text: deviceDescription
-            height: 60
+            radius: 20
+            border.color: "black"
+            border.width: 2
             width: parent.width
-        }
+            height: 120
 
-        Row
-        {
-            spacing: 10
-            Label
+            Column
             {
-                width: 150
-                text: "Device id: "
-                font.pixelSize: 15
+                anchors.fill: parent
+                padding: 20
+            DescriptionText
+            {
+                descripition: "Device name:"
+                text: deviceDescription
+                width: parent.width
             }
-            Label
+
+            DescriptionText
             {
-                width: 100
+                descripition: "Device id:"
                 text: deviceId
-                font.pixelSize: 15
+                // height: 60
+                width: parent.width
+            }
+
+            DescriptionText
+            {
+                descripition: "Lynx version:"
+                text: version
+                // height: 60
+                width: parent.width
+            }
+
+            DescriptionText
+            {
+                descripition: "Number of structs:"
+                text: structCount
+                // height: 60
+                width: parent.width
+            }
             }
         }
     }
