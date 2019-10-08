@@ -3,7 +3,7 @@
 #include <QtCore/QRandomGenerator>
 ScopeServer::ScopeServer(QObject *parent) : QObject(parent)
 {
-    _haltChartRefresh = false;
+    _haltChartRefresh = true;
 
     // SETUP LOGGING
     signalInformation.append(loggerInfo{0,"Voltage",""});

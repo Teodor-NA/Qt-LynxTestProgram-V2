@@ -41,12 +41,10 @@ ChartView {
     property var setMinAxis: 0
     property bool openGL: true
     property bool openGLSupported: true
-    property var xaxis: new Date()
-    property var xaxis_min: new Date()
+    property var xaxis_first: new Date()
+    property var xaxis_last: new Date()
     property var nMin : 1
     property var deltaX :10000 //10*1000ms delta time
-    property var numberOfSignals: 0
-    property var maxNumberOfSignals: 0
 //    onOpenGLChanged: {
 //        if (openGLSupported) {
 //            series("signal 1").useOpenGL = openGL;
@@ -177,22 +175,22 @@ MouseArea{
 
 }
 
-PinchArea{
-    id: pa
+//PinchArea{
+//    id: pa
 
-    anchors.fill: parent
-    onPinchUpdated: {
-        console.log ("pich clicked")
-        chartView.zoomReset();
-        //                    var center_x = pinch.center.x
-        //                    var center_y = pinch.center.y
-        //                    var width_zoom = height/pinch.scale;
-        //                    var height_zoom = width/pinch.scale;
-        //                    var r = Qt.rect(center_x-width_zoom/2, center_y - height_zoom/2, width_zoom, height_zoom)
-        //                    chartView.zoomIn(r)
-    }
+//    anchors.fill: parent
+//    onPinchUpdated: {
+//        console.log ("pich clicked")
+//        chartView.zoomReset();
+//        //                    var center_x = pinch.center.x
+//        //                    var center_y = pinch.center.y
+//        //                    var width_zoom = height/pinch.scale;
+//        //                    var height_zoom = width/pinch.scale;
+//        //                    var r = Qt.rect(center_x-width_zoom/2, center_y - height_zoom/2, width_zoom, height_zoom)
+//        //                    chartView.zoomIn(r)
+//    }
 
-}
+//}
 ValueAxis {
     id: axisY1
     min: -1
@@ -208,8 +206,8 @@ DateTimeAxis {
     id:axisX
     format: "hh:mm:ss"
     tickCount: 5
-    min:xaxis_min
-    max:xaxis
+    min:xaxis_first
+    max:xaxis_last
 }
 
 //LineSeries {
@@ -230,8 +228,8 @@ DateTimeAxis {
 function resizeHorizontal()
 {
     chartView.zoomReset()
-    xaxis=new Date(backend.getLastX());
-    xaxis_min=new Date(backend.getFirstX())
+    xaxis_last=new Date(backend.getLastX());
+    xaxis_first=new Date(backend.getFirstX())
     deltaX = backend.getLastX() - backend.getFirstX()
 }
 
@@ -254,7 +252,7 @@ function changeSeriesType(type) {
         for(var n=0; n<numberOfSignals;n++)
         {
            var series1 = chartView.createSeries(ChartView.SeriesTypeLine, backend.getSignalText(n), axisX, axisY1);
-            series1.useOpenGL = true
+            series1.useOpenGL = openGLSupported
         }
 
     }
@@ -265,7 +263,7 @@ function changeSeriesType(type) {
            var series2 = chartView.createSeries(ChartView.SeriesTypeScatter, backend.getSignalText(n), axisX, axisY1);
             series2.markerSize = 2;
             series2.borderColor = "transparent";
-            series2.useOpenGL = true
+            series2.useOpenGL = openGLSupported
         }
 //        var series1 = chartView.createSeries(ChartView.SeriesTypeScatter, "signal 1",
 //                                             axisX, axisY1);

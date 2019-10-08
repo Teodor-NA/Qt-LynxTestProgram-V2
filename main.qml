@@ -18,6 +18,15 @@ Item
     Connections
     {
         target: scopeServer
+        onCreateSeries:
+        {
+            if (linePlot.enabled){
+                scopeView.changeSeriesType("scatter");
+            }
+            else{
+                scopeView.changeSeriesType("line");
+            }
+        }
 
         onRefreshChart:
         {
@@ -28,12 +37,12 @@ Item
             }
             // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-            if(!scopeView.chartView.isZoomed())
+            if(!scopeView.isZoomed())
             {
 
-                xaxis = new Date()
+                scopeView.xaxis = new Date()
                 var today = new Date();
-                xaxis_min = new Date(new Date() - deltaX)
+                scopeView.xaxis_min = new Date(new Date() -scopeView.deltaX)
             }
 
 
