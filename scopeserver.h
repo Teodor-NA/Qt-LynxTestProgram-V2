@@ -31,6 +31,8 @@ class ScopeServer : public QObject
     QTimer* newDataTimer;
     qint64 xFirstPause;
     qint64 xLastPause;
+    double frameMin;
+    double frameMax;
 public:
     explicit ScopeServer(QObject *parent = nullptr);
 
@@ -65,6 +67,10 @@ public slots:
         xFirstPause=getFirstX();
         _haltChartRefresh = true;
     }
+
+    // Get frame min max
+    void calcMinMaxY(int time);
+
     // Enable the logger append
     void resumeLogging(){_haltLogging = false;_historicData=false;}
 
@@ -77,9 +83,15 @@ public slots:
     // Returns the min Y axis
     double getMinY() { return min; }
 
+    // Returns the max Y axis
+    double getFrameMaxY() { return frameMax; }
+
+    // Returns the min Y axis
+    double getFrameMinY() { return frameMin; }
     // Resets the min and max Y axis
     void resetY() { max = 0; min = 0; }
     // Get the first Xaxis data. Dependant on realtime or history logging
+
     qint64 getFirstX()
     {
         if(_haltChartRefresh && !_historicData)

@@ -8,6 +8,7 @@ ScopeServer::ScopeServer(QObject *parent) : QObject(parent)
 {
     _haltChartRefresh = true;
     _seriesCreated = false;
+    _historicData = false;
     // SETUP LOGGING
     signalInformation.append(loggerInfo{0,"Voltage","",""});
     signalInformation.append(loggerInfo{1,"Current","",""});
@@ -27,6 +28,9 @@ ScopeServer::ScopeServer(QObject *parent) : QObject(parent)
     newDataTimer = new QTimer(this);
     connect(newDataTimer, SIGNAL(timeout()), this, SLOT(newDataRecived()),Qt::UniqueConnection);
     newDataTimer->start(10);
+    QList<int> l {2,34,5,2,1,-1,4,3,5,12,22,123,-244,41,2,3,1,152,515};
+    auto mm = std::minmax_element(l.begin(), l.end());
+    qDebug() << "min: "<<*mm.first <<" max " << *mm.second;
 }
 void ScopeServer::newDataRecived()
 {
@@ -46,6 +50,33 @@ void ScopeServer::newDataRecived()
    }
 
 }
+void ScopeServer::calcMinMaxY(int time)
+{
+    double min_=0;
+    double max_=0;
+
+    for (int i=0;i<logger.count();i++)
+    {
+        double delta = logger[0].at(logger[0].count()-1).x()-logger[0].at(logger[0].count()-2).x();
+        QList<double> liste;
+        liste.reserve(int(time/delta));
+        for (int n=1;n<int(time/delta);n++)
+        {
+            liste.append(logger[0].at(logger[0].count()-n).y());
+
+        }
+        auto mm = std::minmax_element(liste.begin(), liste.end());
+        if(*mm.first < min_)
+            min_ = *mm.first;
+        if(*mm.second > max_)
+            max_ = *mm.second;
+    }
+
+    //qDebug() << "min: "<<*mm.first <<" max " << *mm.second;
+    frameMin = min_;
+    frameMax = max_;
+}
+
 void ScopeServer::writeToCSV(const QString & file)
 {
     // Write file
@@ -60,18 +91,13 @@ void ScopeServer::readFromCSV(const QString & file)
 void ScopeServer::update(QAbstractSeries *series,int index)
 {
 
-    if (series) {
+    if (series)
+    {
         QXYSeries *xySeries = static_cast<QXYSeries *>(series);
-
-//        m_index++;
-//        if (m_index > logger.count() - 1)
-//            m_index = 0;
-
         QVector<QPointF> points = logger.at(index);
         if(points.last().y()>max)
         {
             max=points.last().y();
-
         }
         if(points.last().y()<min)
         {

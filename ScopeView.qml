@@ -29,16 +29,17 @@
 
 import QtQuick 2.12
 import QtCharts 2.3
+import Qt.labs.platform 1.1
 //import scopeServer 1.1
 //![1]
 
 ChartView {
     id: chartView
-    animationOptions: ChartView.NoAnimation
+    animationOptions: ChartView.SeriesAnimations //NoAnimation
+
     theme: ChartView.ChartThemeLight
     antialiasing: true
     legend.font.pixelSize: 15
-
     property var setMaxAxis: 0
     property var setMinAxis: 0
     property bool openGL: true
@@ -47,18 +48,19 @@ ChartView {
     property var xaxis_max: new Date()
     property var nMin : 1
     property var deltaX :10000 //10*1000ms delta time
-//        onOpenGLChanged: {
-//            if (openGLSupported) {
-//                series("signal 1").useOpenGL = openGL;
-//                series("signal 2").useOpenGL = openGL;
-//            }
-//        }
-//        Component.onCompleted: {
-//            if (!series("signal 1").useOpenGL) {
-//                openGLSupported = false
-//                openGL = false
-//            }
-//        }
+    property url myDir: StandardPaths.writableLocation(StandardPaths.DesktopLocation)
+    //        onOpenGLChanged: {
+    //            if (openGLSupported) {
+    //                series("signal 1").useOpenGL = openGL;
+    //                series("signal 2").useOpenGL = openGL;
+    //            }
+    //        }
+    //        Component.onCompleted: {
+    //            if (!series("signal 1").useOpenGL) {
+    //                openGLSupported = false
+    //                openGL = false
+    //            }
+    //        }
 
 
 
@@ -97,7 +99,9 @@ ChartView {
     MouseArea{
         property bool hasBeenPressedAndHoled: false
         id:mouseArea
-
+        property bool pressedOnce: false
+        property int lastX: 0
+        property int lastY: 0
         hoverEnabled: true
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton
@@ -112,7 +116,40 @@ ChartView {
                 hasBeenPressedAndHoled=true
                 console.log("been pressed")
             }
+            if(mouse.button === Qt.RightButton)
+            {
+                if(!pressedOnce)
+                {
+                    lastX = mouse.x
+                    lastY = mouse.y
+                    pressedOnce=true
+                    console.log("been pressed")
+                }
 
+
+
+
+
+
+
+            }
+
+        }
+        onPositionChanged: {
+            if(pressedOnce)
+            {
+                console.log("pos Changed")
+            if (lastX !== mouse.x) {
+                chartView.scrollRight(lastX - mouse.x)
+                lastX = mouse.x
+                //pressedOnce=false;
+            }
+            if (lastY !== mouse.y) {
+                chartView.scrollDown(lastY - mouse.y)
+                lastY = mouse.y
+                //pressedOnce=false;
+            }
+            }
         }
 
         onMouseXChanged: {
@@ -126,16 +163,19 @@ ChartView {
             rubberBandRec2.height = rubberBandRec2.y - mouseY;
             rubberBandRec3.height = mouseY - rubberBandRec3.y;
             rubberBandRec4.height = mouseY - rubberBandRec4.y;
-            if(rubberBandRec1.height<50)
-                rubberBandRec1.height=1;
-            if(rubberBandRec2.height<50)
-                rubberBandRec2.height=1;
-            if(rubberBandRec3.height<50)
-                rubberBandRec3.height=1;
-            if(rubberBandRec4.height<50)
-                rubberBandRec4.height=1;
+            //            if(rubberBandRec1.height<50)
+            //                rubberBandRec1.height=1;
+            //            if(rubberBandRec2.height<50)
+            //                rubberBandRec2.height=1;
+            //            if(rubberBandRec3.height<50)
+            //                rubberBandRec3.height=1;
+            //            if(rubberBandRec4.height<50)
+            //                rubberBandRec4.height=1;
         }
         onReleased: {
+            if(mouse.button === Qt.RightButton)
+                pressedOnce=false;
+
             if(hasBeenPressedAndHoled && mouse.button === Qt.LeftButton)
             {
 
@@ -160,10 +200,19 @@ ChartView {
             hasBeenPressedAndHoled=false
 
         }
+        onPressAndHold: {
+
+        }
+
         onClicked: {
             if(mouse.button === Qt.RightButton)
             {
-                chartView.zoomOut();
+                //chartView.zoomOut();
+                console.log(xaxis_max-xaxis_min)//ms of chart
+
+
+
+
             }
 
         }
@@ -212,27 +261,47 @@ ChartView {
         max:xaxis_max
     }
 
-//    LineSeries {
-//        id: lineSeries1
-//        name: "signal 1"
-//        axisX: axisX
-//        axisY: axisY1
-//        useOpenGL: chartView.openGL
-//    }
-//    LineSeries {
-//        id: lineSeries2
-//        name: "signal 2"
-//        axisX: axisX
-//        axisYRight: axisY2
-//        useOpenGL: chartView.openGL
-//    }
+    //    LineSeries {
+    //        id: lineSeries1
+    //        name: "signal 1"
+    //        axisX: axisX
+    //        axisY: axisY1
+    //        useOpenGL: chartView.openGL
+    //    }
+    //    LineSeries {
+    //        id: lineSeries2
+    //        name: "signal 2"
+    //        axisX: axisX
+    //        axisYRight: axisY2
+    //        useOpenGL: chartView.openGL
+    //    }
+    function screenShot()
+    {
+        var paths = myDir.toString().replace(/^(file:\/{3})/,"")
+        console.log(paths + "/something.png")
+        chartView.grabToImage(function(result){ console.log(result.saveToFile(paths + "/lynxLogScreenshot.png"));});
+
+    }
 
     function resizeHorizontal()
     {
-        chartView.zoomReset()
-        xaxis_min=new Date(scopeServer.getLastX());
-        xaxis_max=new Date(scopeServer.getFirstX())
+        //chartView.zoomReset()
+
+        xaxis_min=new Date(scopeServer.getFirstX());
+        xaxis_max=new Date(scopeServer.getLastX())
         deltaX = scopeServer.getLastX() - scopeServer.getFirstX()
+    }
+    function resizeVertial()
+    {
+        scopeServer.calcMinMaxY(xaxis_max-xaxis_min);
+        //chartView.zoomReset();
+        var maxY = scopeServer.getFrameMaxY()//ms of chart
+        var minY = scopeServer.getFrameMinY()//ms of chart
+        axisY1.max=maxY
+        axisY1.min=minY
+        axisY2.max=maxY
+        axisY2.min=minY
+
     }
 
     function autoscale()
@@ -242,6 +311,9 @@ ChartView {
         axisY1.min=scopeServer.getMinY()*1.05
         axisY2.max=scopeServer.getMaxY()*1.05
         axisY2.min=scopeServer.getMinY()*1.05
+
+
+
     }
 
     function changeSeriesType(type) {

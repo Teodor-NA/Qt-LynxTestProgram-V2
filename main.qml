@@ -175,36 +175,6 @@ Item
 
             IconButton
             {
-                id: addSignal
-                filename:"icons8-add-new-50"
-                visible: topRibbon.graphButtonsVisible
-                tooltip: "Add signal"
-                onClicked:
-                {
-                    scopeView.maxNumberOfSignals = scopeServer.getNumberOfSignals()
-
-                    if(scopeView.numberOfSignals<scopeView.maxNumberOfSignals)
-                        scopeView.numberOfSignals++
-
-                    scopeView.changeSeriesType("line")
-                }
-            }
-
-            IconButton
-            {
-                id:removeSignal
-                filename:"icons8-reduce-50"
-                visible: topRibbon.graphButtonsVisible
-                tooltip: "Remove signal"
-                onClicked:{
-                    if(scopeView.numberOfSignals>1)
-                        scopeView.numberOfSignals--
-                    scopeView.changeSeriesType("line")
-                }
-            }
-
-            IconButton
-            {
                 property bool enabled: false
                 id: linePlot
                 tooltip: "Line Plot"
@@ -213,13 +183,14 @@ Item
                 onClicked:{
                     if (enabled){
                         enabled = false
-                        filename = "icons8-scatter-plot-50"
-                        scopeView.changeSeriesType("scatter");
+
+                        filename = "icons8-plot-50"
+                        scopeView.changeSeriesType("line");
                     }
                     else{
                         enabled = true
-                        filename = "icons8-plot-50"
-                        scopeView.changeSeriesType("line");
+                        filename = "icons8-scatter-plot-50"
+                        scopeView.changeSeriesType("scatter");
                     }
                 }
             }
@@ -243,7 +214,14 @@ Item
                     }
                 }
             }
-
+            IconButton{
+                visible: topRibbon.graphButtonsVisible
+                filename: "icons8-screenshot-50"
+                tooltip: "Screenshot"
+                onClicked: {
+                    scopeView.screenShot()
+                }
+            }
             IconButton{
                 visible: topRibbon.graphButtonsVisible
                 filename: "icons8-expand-50"
@@ -266,7 +244,7 @@ Item
                 visible: topRibbon.graphButtonsVisible
                 filename: "icons8-resize-vertical-50"
                 tooltip: "Autoscale Y"
-                onClicked: scopeView.autoscale()
+                onClicked: scopeView.resizeVertial()
             }
 
             Image {
