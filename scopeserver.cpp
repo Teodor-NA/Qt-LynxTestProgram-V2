@@ -7,7 +7,7 @@
 ScopeServer::ScopeServer(QObject *parent) : QObject(parent)
 {
     _haltChartRefresh = true;
-
+    _seriesCreated = false;
     // SETUP LOGGING
     signalInformation.append(loggerInfo{0,"Voltage","",""});
     signalInformation.append(loggerInfo{1,"Current","",""});

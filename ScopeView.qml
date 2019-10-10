@@ -37,6 +37,8 @@ ChartView {
     animationOptions: ChartView.NoAnimation
     theme: ChartView.ChartThemeLight
     antialiasing: true
+    legend.font.pixelSize: 15
+
     property var setMaxAxis: 0
     property var setMinAxis: 0
     property bool openGL: true
@@ -254,6 +256,7 @@ ChartView {
                 console.log(n)
                 var series1 = chartView.createSeries(ChartView.SeriesTypeLine, scopeServer.getSignalText(n), axisX, axisY1);
                 series1.useOpenGL = true;
+
             }
 
         }

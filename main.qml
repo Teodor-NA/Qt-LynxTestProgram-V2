@@ -203,12 +203,12 @@ Item
                 onClicked:{
                     if (enabled){
                         enabled = false
-                        filename = "icons8-plot-50"
+                        filename = "icons8-scatter-plot-50"
                         scopeView.changeSeriesType("scatter");
                     }
                     else{
                         enabled = true
-                        filename = "icons8-scatter-plot-50"
+                        filename = "icons8-plot-50"
                         scopeView.changeSeriesType("line");
                     }
                 }

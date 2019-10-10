@@ -22,7 +22,7 @@ class ScopeServer : public QObject
 
     QList<loggerInfo> signalInformation;
     QList<QVector<QPointF>> logger;
-
+    bool _seriesCreated;
     bool _haltChartRefresh;
     double max;
     double min;
@@ -50,7 +50,11 @@ public slots:
     // Starts the chartview refresh emit
     void resumeChartviewRefresh()
     {
-        emit createSeries();
+        if(!_seriesCreated)
+        {
+            _seriesCreated=true;
+            emit createSeries();
+        }
         _haltChartRefresh = false;
     }
 
