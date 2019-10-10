@@ -47,5 +47,6 @@
         <file>ScopeView.qml</file>
         <file>icons/icons8-update-left-rotation-50.png</file>
         <file>SelectionView.qml</file>
+        <file>DescriptionText.qml</file>
     </qresource>
 </RCC>
