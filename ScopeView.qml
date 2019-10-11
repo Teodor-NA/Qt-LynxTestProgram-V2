@@ -29,14 +29,12 @@
 
 import QtQuick 2.12
 import QtCharts 2.3
-import Qt.labs.platform 1.1
-//import scopeServer 1.1
+import QtQuick.Dialogs 1.2
 //![1]
 
 ChartView {
     id: chartView
     animationOptions: ChartView.SeriesAnimations //NoAnimation
-
     theme: ChartView.ChartThemeLight
     antialiasing: true
     legend.font.pixelSize: 15
@@ -48,23 +46,11 @@ ChartView {
     property var xaxis_max: new Date()
     property var nMin : 1
     property var deltaX :10000 //10*1000ms delta time
-    property url myDir: StandardPaths.writableLocation(StandardPaths.DesktopLocation)
-    //        onOpenGLChanged: {
-    //            if (openGLSupported) {
-    //                series("signal 1").useOpenGL = openGL;
-    //                series("signal 2").useOpenGL = openGL;
-    //            }
-    //        }
-    //        Component.onCompleted: {
-    //            if (!series("signal 1").useOpenGL) {
-    //                openGLSupported = false
-    //                openGL = false
-    //            }
-    //        }
 
-
-
-
+    FileDialog
+    {
+        id:screenShots
+    }
     Rectangle{
         id: rubberBandRec1
         border.color: "black"
@@ -125,12 +111,6 @@ ChartView {
                     pressedOnce=true
                     console.log("been pressed")
                 }
-
-
-
-
-
-
 
             }
 
@@ -277,10 +257,9 @@ ChartView {
     //    }
     function screenShot()
     {
-        var paths = myDir.toString().replace(/^(file:\/{3})/,"")
-        console.log(paths + "/something.png")
-        chartView.grabToImage(function(result){ console.log(result.saveToFile(paths + "/lynxLogScreenshot.png"));});
-
+        var mypaths = screenShots.shortcuts.desktop.toString().replace(/^(file:\/{3})/,"")
+        console.log("Screenshot created at: " + mypaths + "/lynxLogScreenshots-"+new Date().toLocaleTimeString().replace(new RegExp(":", 'g'),".")+".png")
+        chartView.grabToImage(function(result){ console.log(result.saveToFile(mypaths + "/lynxLogScreenshots-"+new Date().toLocaleTimeString().replace(new RegExp(":", 'g'),".")+".png"));});
     }
 
     function resizeHorizontal()

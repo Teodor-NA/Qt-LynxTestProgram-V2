@@ -338,7 +338,9 @@ Item
     FileDialog
     {
         id: fileDialogWrite
+        selectExisting: false
         title: "Please choose a file"
+        folder: shortcuts.desktop
         // fileMode: FileDialog.SaveFile
         // folder:   StandardPaths.standardLocations(StandardPaths.PicturesLocation)
         nameFilters: [ "Text files (*.csv)" ]
@@ -352,10 +354,14 @@ Item
 
     FileDialog
     {
+
         id: fileDialogRead
+        selectExisting: true
+        sidebarVisible :true
+        modality: Qt.w
         title: "Please choose a file"
         // fileMode: FileDialog.OpenFile
-        // folder:   StandardPaths.standardLocations(StandardPaths.PicturesLocation)
+         folder: shortcuts.desktop
         nameFilters: [ "Text files (*.csv)" ]
         onAccepted: {
 
