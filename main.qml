@@ -50,12 +50,19 @@ Item
                 scopeServer.update(scopeView.series(n), n);
             }
 
-            //if(!scopeView.isZoomed())
-            //{
+            if(!scopeView.isZoomed())
+            {
                 scopeView.xaxis_max = new Date()
-                var today = new Date();
+                //var today = new Date();
                 scopeView.xaxis_min = new Date(new Date() - scopeView.deltaX)
-            //}
+            }
+            else
+            {
+                scopeView.xaxis_max = new Date(new Date() - scopeView.offsetFromCurrentTime)
+
+                scopeView.xaxis_min = new Date(scopeView.xaxis_max - scopeView.deltaX)
+
+            }
         }
         onReScale:
         {
@@ -166,6 +173,7 @@ Item
                 filename:"icons8-folder-50"
                 tooltip: "Load File"
                 onClicked:fileDialogRead.visible = true
+
             }
 
             Image {
@@ -197,12 +205,21 @@ Item
 
             IconButton
             {
+                id:playButton
                 property bool enabled: false
+                property bool resumeRealTimer: false
                 visible: topRibbon.graphButtonsVisible
                 filename: "icons8-play-50"
                 tooltip: "Live view"
                 onClicked:{
-                    if (enabled){
+                    if(resumeRealTimer)
+                    {
+                        resumeRealTimer=false
+                        scopeView.deltaX = 10000 //Reset default
+                        scopeServer.resumeRealtime()
+                    }
+
+                    else if (enabled){
                         enabled = false
                         filename = "icons8-play-50"
                         scopeServer.pauseChartviewRefresh();
@@ -227,7 +244,7 @@ Item
                 filename: "icons8-expand-50"
                 tooltip: "Autoscale all"
                 onClicked: {
-                    scopeView.resizeHorizontal()
+                    //scopeView.resizeHorizontal()
                     scopeView.autoscale()
                 }
             }
@@ -363,9 +380,11 @@ Item
         // fileMode: FileDialog.OpenFile
         folder: shortcuts.desktop
         nameFilters: [ "Text files (*.csv)" ]
-        onAccepted: {
-
-                scopeServer.readFromCSV(fileDialogRead.fileUrl)
+        onAccepted:
+        {
+            scopeServer.readFromCSV(fileDialogRead.fileUrl)
+            playButton.resumeRealTimer = true;
+            playButton.filename = "icons8-realtime-50"
 
         }
         onRejected: {

@@ -9,6 +9,16 @@ ScopeServer::ScopeServer(QObject *parent) : QObject(parent)
     _haltChartRefresh = true;
     _seriesCreated = false;
     _historicData = false;
+
+    createDemo();
+
+    newDataTimer = new QTimer(this);
+    connect(newDataTimer, SIGNAL(timeout()), this, SLOT(newDataRecived()),Qt::UniqueConnection);
+    newDataTimer->start(10);
+
+}
+void ScopeServer::createDemo()
+{
     // SETUP LOGGING
     signalInformation.append(loggerInfo{0,"Voltage","","red"});
     signalInformation.append(loggerInfo{1,"Current","","blue"});
@@ -24,13 +34,6 @@ ScopeServer::ScopeServer(QObject *parent) : QObject(parent)
     logger.append(points);
     logger.append(points);
     logger.append(points);
-
-    newDataTimer = new QTimer(this);
-    connect(newDataTimer, SIGNAL(timeout()), this, SLOT(newDataRecived()),Qt::UniqueConnection);
-    newDataTimer->start(10);
-    QList<int> l {2,34,5,2,1,-1,4,3,5,12,22,123,-244,41,2,3,1,152,515};
-    auto mm = std::minmax_element(l.begin(), l.end());
-    qDebug() << "min: "<<*mm.first <<" max " << *mm.second;
 }
 void ScopeServer::newDataRecived()
 {

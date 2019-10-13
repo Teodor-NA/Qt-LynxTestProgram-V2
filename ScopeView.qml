@@ -46,6 +46,7 @@ ChartView {
     property var xaxis_max: new Date()
     property var nMin : 1
     property var deltaX :10000 //10*1000ms delta time
+    property var offsetFromCurrentTime: 0
 
     FileDialog
     {
@@ -163,13 +164,17 @@ ChartView {
 
                 var x = rubberBandRec4.x-(rubberBandRec4.width<0)*Math.abs(rubberBandRec4.width);
                 var y = rubberBandRec4.y-(rubberBandRec4.height<0)*Math.abs(rubberBandRec4.height);
-                if(rubberBandRec4.height==1)
-                    rubberBandRec4.height=scopeView.plotArea.height
+//                if(rubberBandRec4.height==1)
+//                    rubberBandRec4.height=scopeView.plotArea.height
 
 
-                if (Math.abs(rubberBandRec4.width*rubberBandRec4.height)>100)
-                    chartView.zoomIn(Qt.rect(x, y, Math.abs(rubberBandRec4.width),
-                                             Math.abs(rubberBandRec4.height)));
+                if (Math.abs(rubberBandRec4.width*rubberBandRec4.height)>100){
+                    var currentMax=chartView.axisX().max
+                    chartView.zoomIn(Qt.rect(x, y, Math.abs(rubberBandRec4.width),Math.abs(rubberBandRec4.height)));
+                    offsetFromCurrentTime=currentMax - chartView.axisX().max
+                    console.log(offsetFromCurrentTime)
+                    deltaX=chartView.axisX().max - chartView.axisX().min
+                }
                 else
                     chartView.zoomIn(Qt.rect(x-100, y-100,200,200))
                 rubberBandRec1.visible = false;
@@ -227,6 +232,7 @@ ChartView {
         id: axisY1
         min: -1
         max: 1
+
     }
 
     ValueAxis {
@@ -245,37 +251,43 @@ ChartView {
     function screenShot()
     {
         var mypaths = screenShots.shortcuts.desktop.toString().replace(/^(file:\/{3})/,"")
-        console.log("Screenshot created at: " + mypaths + "/lynxLogScreenshots-"+new Date().toLocaleTimeString().replace(new RegExp(":", 'g'),".")+".png")
-        chartView.grabToImage(function(result){ console.log(result.saveToFile(mypaths + "/lynxLogScreenshots-"+new Date().toLocaleTimeString().replace(new RegExp(":", 'g'),".")+".png"));});
+        var filename = "/lynxLogScreenshots-"+new Date().toLocaleTimeString().replace(new RegExp(":", 'g'),".")+".png";
+
+        chartView.grabToImage(function(result)
+        {
+            if(result.saveToFile(mypaths + filename))
+                console.log("Screenshot created at: " + mypaths + filename);
+            else
+                console.log("Screenshot failed");
+        });
+
     }
 
     function resizeHorizontal()
     {
+        chartView.zoomReset();
         xaxis_min=new Date(scopeServer.getFirstX());
         xaxis_max=new Date(scopeServer.getLastX())
         deltaX = scopeServer.getLastX() - scopeServer.getFirstX()
     }
     function resizeVertial()
     {
+
         scopeServer.calcAxisIndex(xaxis_min.getTime(),xaxis_max.getTime())
         scopeServer.calcMinMaxY();
-        //chartView.zoomReset();
         var maxY = scopeServer.getFrameMaxY()//ms of chart
         var minY = scopeServer.getFrameMinY()//ms of chart
-        axisY1.max=maxY
-        axisY1.min=minY
-        axisY2.max=maxY
-        axisY2.min=minY
+        axisY1.max=maxY*1.075
+        axisY1.min=minY*1.075
+        axisY2.max=maxY*1.075
+        axisY2.min=minY*1.075
     }
 
     function autoscale()
     {
         chartView.zoomReset();
         resizeHorizontal()
-        axisY1.max=scopeServer.getMaxY()*1.05
-        axisY1.min=scopeServer.getMinY()*1.05
-        axisY2.max=scopeServer.getMaxY()*1.05
-        axisY2.min=scopeServer.getMinY()*1.05
+        resizeVertial()
     }
 
     function changeSeriesType(type)
@@ -302,21 +314,15 @@ ChartView {
 
     }
 
-    //    function createAxis(min, max) {
-    //        // The following creates a ValueAxis object that can be then set as a x or y axis for a series
-    //        return Qt.createQmlObject("import QtQuick 2.0; import QtCharts 2.0; ValueAxis { min: "
-    //                                  + min + "; max: " + max + " }", chartView);
-    //    }
-    //![3]
 
-    function setAnimations(enabled) {
-        if (enabled)
-            chartView.animationOptions = ChartView.SeriesAnimations;
-        else
-            chartView.animationOptions = ChartView.NoAnimation;
-    }
+//    function setAnimations(enabled) {
+//        if (enabled)
+//            chartView.animationOptions = ChartView.SeriesAnimations;
+//        else
+//            chartView.animationOptions = ChartView.NoAnimation;
+//    }
 
-    function changeRefreshRate(rate) {
-        refreshTimer.interval = 1 / Number(rate) * 1000;
-    }
+//    function changeRefreshRate(rate) {
+//        refreshTimer.interval = 1 / Number(rate) * 1000;
+//    }
 }

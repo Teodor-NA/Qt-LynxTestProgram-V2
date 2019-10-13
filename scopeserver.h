@@ -35,6 +35,7 @@ class ScopeServer : public QObject
     double frameMax;
     int _firstIndex;
     int _secondIndex;
+    void createDemo();
 public:
     explicit ScopeServer(QObject *parent = nullptr);
 
@@ -44,6 +45,15 @@ signals:
     void createSeries();
 
 public slots:
+    void resumeRealtime()
+    {
+        logger.clear();
+        signalInformation.clear();
+        createDemo();
+        emit createSeries();
+        _haltLogging = false;
+        _haltChartRefresh = false;
+    }
     // Return the number of signals that should be logged
     int getNumberOfSignals() { return signalInformation.count(); }
 
