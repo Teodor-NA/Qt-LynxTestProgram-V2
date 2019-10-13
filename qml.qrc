@@ -48,5 +48,7 @@
         <file>icons/icons8-update-left-rotation-50.png</file>
         <file>SelectionView.qml</file>
         <file>DescriptionText.qml</file>
+        <file>VariableInfo.qml</file>
+        <file>MyFrame.qml</file>
     </qresource>
 </RCC>

@@ -6,6 +6,7 @@ Item {
     property string descripition: "Not set"
     property string text: "Not set"
     implicitHeight: 20
+    implicitWidth: 270
 
     Row
     {
@@ -13,7 +14,7 @@ Item {
         spacing: 10
         Label
         {
-            width: 150
+            width: 160
             text: item.descripition
             font.bold: true
             font.pixelSize: 15

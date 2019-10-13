@@ -4,16 +4,42 @@
 #include <QObject>
 #include <QtDebug>
 #include <QtQuick/QQuickView>
-#include "lynxstructure.h"
+#include "LynxStructure.h"
 #include "lynxuartqt.h"
 // #include "lightcontrol.h"
 // #include "teststruct.h"
 
-struct AddedStruct
-{
-    int deviceIndex;
-    int structIndex;
-};
+//class LynxQtId : public QObject
+//{
+//    Q_OBJECT
+
+//    // Q_PROPERTY(int structIndex MEMBER _structIndex NOTIFY structIndexChanged)
+//    // Q_PROPERTY(int variableIndex MEMBER _variableIndex NOTIFY variableIndexChanged)
+
+//    int _structIndex;
+//    int _variableIndex;
+
+//public:
+//    explicit LynxQtId(QObject * parent = nullptr) :
+//        QObject(parent), _structIndex(-1), _variableIndex(-1) {}
+
+//    LynxQtId(LynxId lynxId, QObject * parent = nullptr) :
+//        QObject(parent), _structIndex(lynxId.structIndex), _variableIndex(lynxId.variableIndex) {}
+
+//    operator const LynxId() const { return LynxId(_structIndex, _variableIndex); }
+
+//    const LynxQtId & operator = (const LynxId & other)
+//    {
+//        _structIndex = other.structIndex;
+//        _variableIndex = other.variableIndex;
+
+//        return *this;
+//    }
+
+//signals:
+
+//public slots:
+//};
 
 class BackEnd : public QObject
 {
@@ -37,7 +63,7 @@ class BackEnd : public QObject
     int _selectedStruct;
 
     LynxList<LynxDynamicId> _dynamicIds;
-    LynxList<AddedStruct> _addedStructs;
+    // LynxList<AddedStruct> _addedStructs;
 
     bool _fullscreen;
 
@@ -56,26 +82,28 @@ signals:
     void clearStructList();
     void addStruct(const QString & structInfo);
     void addStructInfo(const QString & description, const QString & id, const QString & count);
+    void addStructIndex(int structIndex);
     void clearVariableList();
-    void addVarable(const QString & description, const QString & index, const QString & type);
-    void addVariableValue(int variableIndex, double value);
+    void addVariable(const QString & variableName, int variableIndex, const QString & variableType, const QString & variableValue, bool enableInput);
+    void changeVariableValue(int structIndex, int variableIndex, const QString & value);
     void fullscreenChanged();
 
 public slots:
     void scan();
     void readData();
     void refreshPortList();
-    void portSelected(int index);
+    void portSelected(int portIndex);
     void connectButtonClicked();
-    void selectDevice(int index);
-    void selectStruct(int index);
+    void selectDevice(int infoIndex);
+    void selectStruct(int infoIndex);
     int generateStruct();
-    void pullStruct();
+    void pullStruct(int structIndex);
     void startPeriodic(unsigned int interval);
     void stopPeriodic();
-    void sendVariable(int variableIndex, double value);
+    void sendVariable(int structIndex, int variableIndex, const QString & value);
     bool uartConnected() { return _uart.opened(); }
     void fullscreenButtonClicked();
+    // void sendData(int structIndex, int variableIndex);
 
 };
 

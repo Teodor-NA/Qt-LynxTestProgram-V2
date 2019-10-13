@@ -21,6 +21,8 @@ int main(int argc, char *argv[])
     viewer.rootContext()->setContextProperty("backEnd", &backEnd);
     viewer.rootContext()->setContextProperty("scopeServer", &scopeServer);
 
+    // qmlRegisterType<BackEnd>("backend", 1, 0, "BackEnd");
+
     QObject::connect(viewer.engine(), &QQmlEngine::quit, &viewer, &QWindow::close);
 
     viewer.setTitle("Qt-Lynx Test Application");

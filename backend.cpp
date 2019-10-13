@@ -41,75 +41,68 @@ void BackEnd::readData()
 
         if(_receiveInfo.state == LynxLib::eNewDataReceived)
         {
-            int deviceIndex = -1;
+            int dynamicIndex = -1;
 
-            for (int i = 0; i < _deviceInfoList.count(); i++)
+            for (int i = 0; i < _dynamicIds.count(); i++)
             {
-                if (_deviceInfoList.at(i).deviceId == _receiveInfo.deviceId)
+                if (_dynamicIds.at(i).structId == _receiveInfo.structId)
                 {
-                    deviceIndex = i;
-                    break;
+                    dynamicIndex = i;
                 }
             }
 
-            if (deviceIndex < 0)
+            if (dynamicIndex < 0)
             {
-                qDebug() << "Could not find device";
+                qDebug() << "Dynamic Id not found";
                 return;
             }
 
-            int structIndex = -1;
+            QString value;
+            LynxLib::E_LynxSimplifiedType tempType;
 
-            for (int i = 0; i < _deviceInfoList.at(deviceIndex).structs.count(); i++)
+            if (_receiveInfo.lynxId.variableIndex < 0)
             {
-                if (_deviceInfoList.at(deviceIndex).structs.at(i).structId == _receiveInfo.structId)
+                LynxId tempId;
+                // All variables
+                for (int i = 0; i < _dynamicIds.at(dynamicIndex).variableIds.count(); i++)
                 {
-                    structIndex = i;
+                    tempId = _dynamicIds.at(dynamicIndex).variableIds.at(i);
+                    tempType = _lynx.simplifiedType(tempId);
+                    switch (tempType)
+                    {
+                    case LynxLib::eString:
+                        value = QString(_lynx.getString(tempId));
+                        break;
+                    case LynxLib::eNumber:
+                        value = QString::number(_lynx.getValue(tempId));
+                        break;
+                    default:
+                        value = "Error";
+                        break;
+                    }
+
+                    this->changeVariableValue(tempId.structIndex, tempId.variableIndex, value);
+                }
+            }
+            else
+            {
+                // Single variable
+                tempType = _lynx.simplifiedType(_receiveInfo.lynxId);
+                switch (tempType)
+                {
+                case LynxLib::eString:
+                    value = QString(_lynx.getString(_receiveInfo.lynxId));
+                    break;
+                case LynxLib::eNumber:
+                    value = QString::number(_lynx.getValue(_receiveInfo.lynxId));
+                    break;
+                default:
+                    value = "Error";
                     break;
                 }
+
+                this->changeVariableValue(_receiveInfo.lynxId.structIndex, _receiveInfo.lynxId.variableIndex, value);
             }
-
-            if (structIndex < 0)
-            {
-                qDebug() << "Could not find struct";
-                return;
-            }
-
-            int dynStructIndex = -1;
-
-            for (int i = 0; i < _addedStructs.count(); i++)
-            {
-                if ((deviceIndex == _addedStructs.at(i).deviceIndex) && (structIndex == _addedStructs.at(i).structIndex))
-                {
-                    dynStructIndex = i;
-                    break;
-                }
-            }
-
-            if (dynStructIndex < 0)
-            {
-                qDebug() << "Dynamic struct not found";
-                return;
-            }
-
-            qDebug() << "-------------- Variables --------------";
-            for (int i = 0; i < _deviceInfoList.at(deviceIndex).structs.at(structIndex).variables.count(); i++)
-            {
-                qDebug() << (QString(_deviceInfoList.at(deviceIndex).structs.at(structIndex).variables.at(i).description) + ":") <<
-                           _lynx.getValue(_dynamicIds.at(dynStructIndex).variableIds.at(i));
-
-            }
-            qDebug()<< "---------------------------------------";
-
-
-            if ((deviceIndex == _selectedDevice) && (structIndex == _selectedStruct))
-            {
-                for (int i = 0; i < _dynamicIds.at(dynStructIndex).variableIds.count(); i++)
-                {
-                    this->addVariableValue(i, _lynx.getValue(_dynamicIds.at(dynStructIndex).variableIds.at(i)));
-                }
-            }
-
         }
         else if (_receiveInfo.state == LynxLib::eNewDeviceInfoReceived)
         {
@@ -138,14 +131,14 @@ void BackEnd::refreshPortList()
     }
 }
 
-void BackEnd::portSelected(int index)
+void BackEnd::portSelected(int portIndex)
 {
     qDebug() << "Port selsected";
-    qDebug() << "Index: " << index;
-    if ((index < 0) || (index >= _portList.count()))
+    qDebug() << "Index: " << portIndex;
+    if ((portIndex < 0) || (portIndex >= _portList.count()))
         return;
 
-    _selectedPort = _portList.at(index);
+    _selectedPort = _portList.at(portIndex);
 }
 
 void BackEnd::connectButtonClicked()
@@ -168,79 +161,123 @@ void BackEnd::connectButtonClicked()
     }
 }
 
-void BackEnd::selectDevice(int index)
+void BackEnd::selectDevice(int infoIndex)
 {
-    qDebug() << "deviceIndex:" << index;
+    qDebug() << "deviceIndex:" << infoIndex;
 
-    _selectedDevice = index - 1;
+    _selectedDevice = infoIndex;
 
     if ((_selectedDevice >= _deviceInfoList.count()) || (_selectedDevice < 0))
     {
-        this->addDeviceInfo("No selection", "No selection", "No selection", "No selection");
-        this->clearStructList();
-        // this->addStruct("No selection");
-        // this->addStructInfo("No selection", "No selection", "No selection");
-        // this->clearVariableList();
-        // this->addVarable("No selection", "No selection", "No selection");
+        qDebug() << "Cannot find device";
     }
     else
     {
         this->addDeviceInfo(
-                    QString(_deviceInfoList.at(index - 1).description),
-                    "0x" + QString::number(_deviceInfoList.at(index - 1).deviceId, 16),
-                    QString(_deviceInfoList.at(index - 1).lynxVersion),
-                    QString::number(_deviceInfoList.at(index - 1).structCount)
+                    QString(_deviceInfoList.at(_selectedDevice).description),
+                    "0x" + QString::number(_deviceInfoList.at(_selectedDevice).deviceId, 16),
+                    QString(_deviceInfoList.at(_selectedDevice).lynxVersion),
+                    QString::number(_deviceInfoList.at(_selectedDevice).structCount)
                     );
 
         this->clearStructList();
-        // this->addStruct("No selection");
-        for (int i = 0; i < _deviceInfoList.at(index - 1).structs.count(); i++)
+//        this->addStruct("No selection");
+        for (int i = 0; i < _deviceInfoList.at(_selectedDevice).structs.count(); i++)
         {
             this->addStruct(
-                QString(_deviceInfoList.at(index - 1).structs.at(i).description) +
-                QString::asprintf(" - 0x%x", _deviceInfoList.at(index - 1).structs.at(i).structId)
+                QString(_deviceInfoList.at(_selectedDevice).structs.at(i).description) +
+                QString::asprintf(" - 0x%x", _deviceInfoList.at(_selectedDevice).structs.at(i).structId)
             );
         }
     }
 }
 
-void BackEnd::selectStruct(int index)
+void BackEnd::selectStruct(int infoIndex)
 {
-    qDebug() << "structIndex:" << index;
+    qDebug() << "structIndex:" << infoIndex;
 
-    _selectedStruct = index - 1;
+    _selectedStruct = infoIndex;
 
     if ((_selectedDevice >= _deviceInfoList.count()) || (_selectedDevice < 0))
     {
-        this->addStructInfo("No selection", "No selection", "No selection");
-        this->clearVariableList();
-        this->addVarable("No selection", "No selection", "No selection");
+        qDebug() << "Cannot find device";
     }
     else if ((_selectedStruct >= _deviceInfoList.at(_selectedDevice).structs.count()) || (_selectedStruct < 0))
     {
-        this->addStructInfo("No selection", "No selection", "No selection");
-        this->clearVariableList();
-        this->addVarable("No selection", "No selection", "No selection");
+        qDebug() << "Cannot find struct";
     }
     else
     {
         qDebug() << "var count:" << _deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variableCount;
+
+        // Add struct info to gui
         this->addStructInfo(
                     QString(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).description),
                     QString::asprintf("0x%x", _deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).structId),
                     QString::number(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variableCount)
         );
 
+        // Add struct index if it exists
+        LynxId tempId;
+        for (int i = 0; i < _dynamicIds.count(); i++)
+        {
+            if (_dynamicIds.at(i).structId == _deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).structId)
+            {
+                qDebug() << "Struct index:" << _dynamicIds.at(i).structLynxId.structIndex << "updated";
+                tempId.structIndex = i;
+                break;
+            }
+        }
+
+        this->addStructIndex(tempId.structIndex);
+
+        if (tempId.structIndex < 0)
+        {
+            qDebug() << "Struct has not been added yet, index was set to -1";
+        }
+
+        QString data;
+
+        // Update variable info in gui
         this->clearVariableList();
 
         for (int i = 0; i < _deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variables.count(); i++)
         {
-            this->addVarable(
-                        QString(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variables.at(i).description),
-                        QString::number(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variables.at(i).index),
-                        QString(LynxTextList::lynxDataType(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variables.at(i).dataType))
+            if (tempId.structIndex >= 0)
+            {
+                // Add the value if the struct is added
+                tempId.variableIndex = i;
+                LynxLib::E_LynxSimplifiedType dataType = _lynx.simplifiedType(tempId);
+
+                switch (dataType)
+                {
+                case LynxLib::eString:
+                    data = QString(_lynx.getString(tempId));
+                    break;
+                case LynxLib::eNumber:
+                    data = QString::number(_lynx.getValue(tempId));
+                    break;
+                default:
+                    data = "Error";
+                    break;
+                }
+            }
+            else
+            {
+                data = "Not set";
+            }
+
+            this->addVariable(
+                QString(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variables.at(i).description),
+                i,
+                QString(LynxTextList::lynxDataType(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variables.at(i).dataType)),
+                data,
+                (LynxLib::accessMode(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variables.at(i).dataType) == LynxLib::eReadWrite)
             );
         }
+
+
+
     }
 
 }
@@ -262,25 +299,51 @@ int BackEnd::generateStruct()
 
     LynxDynamicId temp = _lynx.addStructure(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct));
 
-    if (temp.structId == LynxId())
+    if (temp.structLynxId == LynxId())
     {
         qDebug() << "Struct could not be added (most likely because a struct wth that name or id already exists)";
         return -1;
     }
 
     _dynamicIds.append(temp);
-    _addedStructs.append();
-    _addedStructs.last().deviceIndex = _selectedDevice;
-    _addedStructs.last().structIndex = _selectedStruct;
+//    _addedStructs.append();
+//    _addedStructs.last().deviceIndex = _selectedDevice;
+//    _addedStructs.last().structIndex = _selectedStruct;
+
+    this->addStructIndex(_dynamicIds.last().structLynxId.structIndex);
+
+    // Add variable values
+    QString value;
+    LynxId tempId;
+    LynxLib::E_LynxSimplifiedType tempType;
+    for (int i = 0; i < _dynamicIds.last().variableIds.count(); i++)
+    {
+        tempId = _dynamicIds.last().variableIds.at(i);
+        tempType = _lynx.simplifiedType(tempId);
+        switch (tempType)
+        {
+        case LynxLib::eString:
+            value = QString(_lynx.getString(tempId));
+            break;
+        case LynxLib::eNumber:
+            value = QString::number(_lynx.getValue(tempId));
+            break;
+        default:
+            value = "Error";
+            break;
+        }
+
+        this->changeVariableValue(tempId.structIndex, tempId.variableIndex, value);
+    }
 
     qDebug() << "Struct was succesfully added, new index:" << (_dynamicIds.count() - 1);
 
     return (_dynamicIds.count() - 1);
 }
 
-void BackEnd::pullStruct()
+void BackEnd::pullStruct(int structIndex)
 {
-    LynxId tmpId = this->findStructId();
+    LynxId tmpId(structIndex);
 
     if (tmpId.structIndex < 0)
     {
@@ -320,40 +383,69 @@ void BackEnd::stopPeriodic()
     _uart.remotePeriodicStop(tmpId);
 }
 
-void BackEnd::sendVariable(int variableIndex, double value)
+void BackEnd::sendVariable(int structIndex, int variableIndex, const QString & value)
 {
-    LynxId tmpId = this->findStructId(variableIndex);
+    LynxId tempId(structIndex, variableIndex);
 
-    if (tmpId.structIndex < 0)
+    if (tempId.structIndex < 0)
     {
-        qDebug() << "Could not find datagram. Did you remember to add the struct?";
+        qDebug() << "Struct is not added";
         return;
     }
 
-    qDebug() << QString::asprintf(
-                    "Sending value %f to target '%s'",
-                    value,
-                    _deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variables.at(variableIndex).description.toCharArray()
-                    );
-    _lynx.setValue(value, tmpId);
-    _uart.send(tmpId);
+    if (tempId.variableIndex < 0)
+    {
+        qDebug() << "Sending whole struct, value ignored";
+        _uart.send(tempId);
+        return;
+    }
+
+    switch (_lynx.simplifiedType(tempId))
+    {
+    case LynxLib::eString:
+        qDebug() << "Sending value:" << value;
+        _lynx.setString(value.toLatin1().data(), tempId);
+        _uart.send(tempId);
+        break;
+    case LynxLib::eNumber:
+    {
+        bool parseOk;
+        double tempVal = value.toDouble(&parseOk);
+
+        if (!parseOk)
+        {
+            qDebug() << value << "could not be converted to a number, nothing will be sent";
+            return;
+        }
+
+        qDebug() << "Sending value:" << tempVal;
+
+        _lynx.setValue(tempVal, tempId);
+        _uart.send(tempId);
+
+    }
+        break;
+    default:
+        qDebug() << "Error: type not found";
+        return;
+    }
 }
 
 
 LynxId BackEnd::findStructId(int variableIndex)
 {
-    for (int i = 0; i < _addedStructs.count(); i++)
-    {
-        if ((_addedStructs.at(i).deviceIndex == _selectedDevice) && (_addedStructs.at(i).structIndex == _selectedStruct))
-        {
-            if (variableIndex < 0)
-                return _dynamicIds.at(i).structId;
-            else if(variableIndex < _dynamicIds.at(i).variableIds.count())
-                return _dynamicIds.at(i).variableIds.at(variableIndex);
-            else
-                break;
-        }
-    }
+//    for (int i = 0; i < _addedStructs.count(); i++)
+//    {
+//        if ((_addedStructs.at(i).deviceIndex == _selectedDevice) && (_addedStructs.at(i).structIndex == _selectedStruct))
+//        {
+//            if (variableIndex < 0)
+//                return _dynamicIds.at(i).structId;
+//            else if(variableIndex < _dynamicIds.at(i).variableIds.count())
+//                return _dynamicIds.at(i).variableIds.at(variableIndex);
+//            else
+//                break;
+//        }
+//    }
 
     return LynxId();
 }
@@ -373,3 +465,11 @@ void BackEnd::fullscreenButtonClicked()
 
     emit fullscreenChanged();
 }
+
+//void BackEnd::sendData(int structIndex, int variableIndex)
+//{
+//    LynxId tempId(structIndex, variableIndex);
+
+//    qDebug() << "structIndex:" << tempId.structIndex;
+//    qDebug() << "variableIndex:" << tempId.variableIndex;
+//}

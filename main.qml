@@ -2,6 +2,7 @@ import QtQuick 2.12
 import QtQuick.Window 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Dialogs 1.2
+// import backend 1.0
 // import Qt.labs.platform 1.1
 
 Item
@@ -17,12 +18,23 @@ Item
         onAddDevice: selectionView.addDevice(device)
         onAddDeviceInfo:
         {
-            // const QString & description, const QString & id, const QString & version, const QString & count
             selectionView.deviceDescription = description
             selectionView.deviceId = id
             selectionView.version = version
             selectionView.structCount = count
         }
+        onClearStructList: selectionView.clearStructs()
+        onAddStruct: selectionView.addStruct(structInfo)
+        onAddStructInfo:
+        {
+            selectionView.structDescription = description
+            selectionView.structId = id
+            selectionView.variableCount = count
+        }
+        onAddStructIndex: selectionView.addStructIndex(structIndex)
+        onClearVariableList: selectionView.clearVariableList()
+        onAddVariable: selectionView.addVariable(variableName, variableIndex, variableType, variableValue, enableInput)
+        onChangeVariableValue: selectionView.changeVariableValue(structIndex, variableIndex, value)
     }
 
     Connections
@@ -379,12 +391,12 @@ Item
         // fileMode: FileDialog.OpenFile
         // folder:   StandardPaths.standardLocations(StandardPaths.PicturesLocation)
         nameFilters: [ "Text files (*.csv)" ]
-        onAccepted: {
-
-                scopeServer.readFromCSV(fileDialogRead.file)
-
+        onAccepted:
+        {
+            scopeServer.readFromCSV(fileDialogRead.file)
         }
-        onRejected: {
+        onRejected:
+        {
             console.log("Canceled")
         }
     }
