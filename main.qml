@@ -59,8 +59,8 @@ Item
         }
         onReScale:
         {
-            scopeView.resizeHorizontal()
             scopeView.autoscale()
+
         }
     }
 
@@ -338,14 +338,14 @@ Item
     FileDialog
     {
         id: fileDialogWrite
+
         selectExisting: false
         title: "Please choose a file"
         folder: shortcuts.desktop
-        // fileMode: FileDialog.SaveFile
-        // folder:   StandardPaths.standardLocations(StandardPaths.PicturesLocation)
         nameFilters: [ "Text files (*.csv)" ]
         onAccepted: {
-                scopeServer.writeToCSV(fileDialogWrite.file)
+            console.log("file: "+fileUrl)
+                scopeServer.writeToCSV(fileDialogWrite.fileUrl)
         }
         onRejected: {
             console.log("Canceled")
@@ -358,14 +358,14 @@ Item
         id: fileDialogRead
         selectExisting: true
         sidebarVisible :true
-        modality: Qt.w
+        //modality: Qt.w
         title: "Please choose a file"
         // fileMode: FileDialog.OpenFile
-         folder: shortcuts.desktop
+        folder: shortcuts.desktop
         nameFilters: [ "Text files (*.csv)" ]
         onAccepted: {
 
-                scopeServer.readFromCSV(fileDialogRead.file)
+                scopeServer.readFromCSV(fileDialogRead.fileUrl)
 
         }
         onRejected: {

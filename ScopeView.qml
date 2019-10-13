@@ -104,6 +104,7 @@ ChartView {
             }
             if(mouse.button === Qt.RightButton)
             {
+
                 if(!pressedOnce)
                 {
                     lastX = mouse.x
@@ -119,16 +120,16 @@ ChartView {
             if(pressedOnce)
             {
                 console.log("pos Changed")
-            if (lastX !== mouse.x) {
-                chartView.scrollRight(lastX - mouse.x)
-                lastX = mouse.x
-                //pressedOnce=false;
-            }
-            if (lastY !== mouse.y) {
-                chartView.scrollDown(lastY - mouse.y)
-                lastY = mouse.y
-                //pressedOnce=false;
-            }
+                if (lastX !== mouse.x) {
+                    chartView.scrollRight(lastX - mouse.x)
+                    lastX = mouse.x
+                    //pressedOnce=false;
+                }
+                if (lastY !== mouse.y) {
+                    chartView.scrollDown(lastY - mouse.y)
+                    lastY = mouse.y
+                    //pressedOnce=false;
+                }
             }
         }
 
@@ -241,20 +242,6 @@ ChartView {
         max:xaxis_max
     }
 
-    //    LineSeries {
-    //        id: lineSeries1
-    //        name: "signal 1"
-    //        axisX: axisX
-    //        axisY: axisY1
-    //        useOpenGL: chartView.openGL
-    //    }
-    //    LineSeries {
-    //        id: lineSeries2
-    //        name: "signal 2"
-    //        axisX: axisX
-    //        axisYRight: axisY2
-    //        useOpenGL: chartView.openGL
-    //    }
     function screenShot()
     {
         var mypaths = screenShots.shortcuts.desktop.toString().replace(/^(file:\/{3})/,"")
@@ -264,15 +251,14 @@ ChartView {
 
     function resizeHorizontal()
     {
-        //chartView.zoomReset()
-
         xaxis_min=new Date(scopeServer.getFirstX());
         xaxis_max=new Date(scopeServer.getLastX())
         deltaX = scopeServer.getLastX() - scopeServer.getFirstX()
     }
     function resizeVertial()
     {
-        scopeServer.calcMinMaxY(xaxis_max-xaxis_min);
+        scopeServer.calcAxisIndex(xaxis_min.getTime(),xaxis_max.getTime())
+        scopeServer.calcMinMaxY();
         //chartView.zoomReset();
         var maxY = scopeServer.getFrameMaxY()//ms of chart
         var minY = scopeServer.getFrameMinY()//ms of chart
@@ -280,57 +266,40 @@ ChartView {
         axisY1.min=minY
         axisY2.max=maxY
         axisY2.min=minY
-
     }
 
     function autoscale()
     {
         chartView.zoomReset();
+        resizeHorizontal()
         axisY1.max=scopeServer.getMaxY()*1.05
         axisY1.min=scopeServer.getMinY()*1.05
         axisY2.max=scopeServer.getMaxY()*1.05
         axisY2.min=scopeServer.getMinY()*1.05
-
-
-
     }
 
-    function changeSeriesType(type) {
+    function changeSeriesType(type)
+    {
         chartView.removeAllSeries();
-
-        // Create two new series of the correct type. Axis x is the same for both of the series,
-        // but the series have their own y-axes to make it possible to control the y-offset
-        // of the "signal sources".
-        if (type === "line") {
-            for(var n=0; n<scopeServer.getNumberOfSignals();n++)
-            {
-                console.log(n)
-                var series1 = chartView.createSeries(ChartView.SeriesTypeLine, scopeServer.getSignalText(n), axisX, axisY1);
-                series1.useOpenGL = true;
-
-            }
-
-        }
-        else
+        for(var n=0; n<scopeServer.getNumberOfSignals();n++)
         {
-            for(n=0; n<scopeServer.getNumberOfSignals();n++)
+            //console.log(n)
+            if (type === "line")
+            {
+                var series1 = chartView.createSeries(ChartView.SeriesTypeLine, scopeServer.getSignalText(n), axisX, axisY1);
+                series1.color = scopeServer.getSignalColor(n)
+                series1.useOpenGL = true;
+            }
+            else
             {
                 var series2 = chartView.createSeries(ChartView.SeriesTypeScatter, scopeServer.getSignalText(n), axisX, axisY1);
                 series2.markerSize = 2;
                 series2.borderColor = "transparent";
                 series2.useOpenGL = true;
+
             }
-            //        var series1 = chartView.createSeries(ChartView.SeriesTypeScatter, "signal 1",
-            //                                             axisX, axisY1);
-
-            //        series1.useOpenGL = true
-
-            //        var series2 = chartView.createSeries(ChartView.SeriesTypeScatter, "signal 2",
-            //                                             axisX, axisY2);
-            //        series2.markerSize = 2;
-            //        series2.borderColor = "transparent";
-            //        series2.useOpenGL = chartView.openGL
         }
+
     }
 
     //    function createAxis(min, max) {
