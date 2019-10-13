@@ -22,7 +22,7 @@ class ScopeServer : public QObject
 
     QList<loggerInfo> signalInformation;
     QList<QVector<QPointF>> logger;
-
+    bool _seriesCreated;
     bool _haltChartRefresh;
     double max;
     double min;
@@ -31,6 +31,11 @@ class ScopeServer : public QObject
     QTimer* newDataTimer;
     qint64 xFirstPause;
     qint64 xLastPause;
+    double frameMin;
+    double frameMax;
+    int _firstIndex;
+    int _secondIndex;
+    void createDemo();
 public:
     explicit ScopeServer(QObject *parent = nullptr);
 
@@ -40,17 +45,30 @@ signals:
     void createSeries();
 
 public slots:
+    void resumeRealtime()
+    {
+        logger.clear();
+        signalInformation.clear();
+        createDemo();
+        emit createSeries();
+        _haltLogging = false;
+        _haltChartRefresh = false;
+    }
     // Return the number of signals that should be logged
     int getNumberOfSignals() { return signalInformation.count(); }
 
     // Updates the logger list function
     void newDataRecived();//For demo
-    void writeToCSV(const QString & file);
-    void readFromCSV(const QString & file);
+    void writeToCSV(const QString  &filepath);
+    void readFromCSV(const QString & filepath);
     // Starts the chartview refresh emit
     void resumeChartviewRefresh()
     {
-        emit createSeries();
+        if(!_seriesCreated)
+        {
+            _seriesCreated=true;
+            emit createSeries();
+        }
         _haltChartRefresh = false;
     }
 
@@ -61,6 +79,34 @@ public slots:
         xFirstPause=getFirstX();
         _haltChartRefresh = true;
     }
+    //
+    void calcAxisIndex(qint64 msMin,qint64 msMax)
+    {
+        //int n=0;
+        int firstIndex=0,secondIndex=0;
+        for (int i=logger[0].count();i>0;i--)
+        {
+            if(abs(qint64(logger[0].at(i).x())-msMin)<10 && !firstIndex)
+            {
+                firstIndex=i;
+            }
+            else if (abs(qint64(logger[0].at(i).x())-msMax)<10 && !secondIndex)
+            {
+                secondIndex=i;
+            }
+            if(firstIndex && secondIndex)
+                break;
+        }
+        qDebug()<<"first index found: "<<firstIndex;
+        qDebug()<<"second index found: "<<secondIndex;
+        _firstIndex = firstIndex;
+        _secondIndex = secondIndex;
+
+
+    }
+    // Get frame min max
+    void calcMinMaxY();
+
     // Enable the logger append
     void resumeLogging(){_haltLogging = false;_historicData=false;}
 
@@ -73,9 +119,15 @@ public slots:
     // Returns the min Y axis
     double getMinY() { return min; }
 
+    // Returns the max Y axis
+    double getFrameMaxY() { return frameMax; }
+
+    // Returns the min Y axis
+    double getFrameMinY() { return frameMin; }
     // Resets the min and max Y axis
     void resetY() { max = 0; min = 0; }
     // Get the first Xaxis data. Dependant on realtime or history logging
+
     qint64 getFirstX()
     {
         if(_haltChartRefresh && !_historicData)
@@ -95,6 +147,7 @@ public slots:
     void update(QAbstractSeries *series,int index);
     // Get signalText
     const QString getSignalText(int index) { return signalInformation.at(index).name; }
+    const QString getSignalColor(int index) { return signalInformation.at(index).color; }
 };
 
 #endif // SCOPESERVER_H

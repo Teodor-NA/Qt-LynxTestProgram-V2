@@ -7,26 +7,33 @@
 ScopeServer::ScopeServer(QObject *parent) : QObject(parent)
 {
     _haltChartRefresh = true;
+    _seriesCreated = false;
+    _historicData = false;
 
-    // SETUP LOGGING
-    signalInformation.append(loggerInfo{0,"Voltage","",""});
-    signalInformation.append(loggerInfo{1,"Current","",""});
-    signalInformation.append(loggerInfo{2,"Power","",""});
-    signalInformation.append(loggerInfo{3,"Flux","",""});
-    signalInformation.append(loggerInfo{4,"Pressure","",""});
-
-    QVector<QPointF> points;
-    points.reserve(2000);
-
-    logger.append(points);
-    logger.append(points);
-    logger.append(points);
-    logger.append(points);
-    logger.append(points);
+    createDemo();
 
     newDataTimer = new QTimer(this);
     connect(newDataTimer, SIGNAL(timeout()), this, SLOT(newDataRecived()),Qt::UniqueConnection);
     newDataTimer->start(10);
+
+}
+void ScopeServer::createDemo()
+{
+    // SETUP LOGGING
+    signalInformation.append(loggerInfo{0,"Voltage","","red"});
+    signalInformation.append(loggerInfo{1,"Current","","blue"});
+    signalInformation.append(loggerInfo{2,"Power","","red"});
+    signalInformation.append(loggerInfo{3,"Flux","","orange"});
+    signalInformation.append(loggerInfo{4,"Pressure","","black"});
+
+    QVector<QPointF> points;
+    points.reserve(100000);
+
+    logger.append(points);
+    logger.append(points);
+    logger.append(points);
+    logger.append(points);
+    logger.append(points);
 }
 void ScopeServer::newDataRecived()
 {
@@ -46,32 +53,136 @@ void ScopeServer::newDataRecived()
    }
 
 }
-void ScopeServer::writeToCSV(const QString & file)
+void ScopeServer::calcMinMaxY()
 {
-    // Write file
-    qDebug() << "Write to file is not implemented yet: File: "<<file;
+    double min_=0;
+    double max_=0;
+
+    for (int i=0;i<logger.count();i++)
+    {
+        //double delta = logger[0].at(logger[i].count()-1).x()-logger[i].at(logger[i].count()-2).x();
+        QList<double> liste;
+        liste.reserve(abs(_secondIndex-_firstIndex));
+        for (int n=_firstIndex;n<_secondIndex;n++)
+        {
+            liste.append(logger[i].at(n).y());
+
+        }
+        auto mm = std::minmax_element(liste.begin(), liste.end());
+        qDebug()<<"min: "<< *mm.first<<"Max: "<<*mm.second;
+        if(*mm.first < min_)
+            min_ = *mm.first;
+        if(*mm.second > max_)
+            max_ = *mm.second;
+    }
+
+    //qDebug() << "min: "<<*mm.first <<" max " << *mm.second;
+    frameMin = min_;
+    frameMax = max_;
 }
 
-void ScopeServer::readFromCSV(const QString & file)
+void ScopeServer::writeToCSV(const QString &filepath)
 {
-    // Read file
-    qDebug() << "Read from file is not implemented yet. File: "<<file;
+    // Open csv-file
+    pauseLogging();
+
+    std::string x =filepath.toStdString().substr(filepath.toStdString().find("///") + 3);
+
+    QFile file(QString::fromUtf8(x.c_str()));
+
+    //QString path = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+    //QDir dir;
+    //QFile file(path + "\\file.csv");
+    file.remove();
+    if ( !file.open(QIODevice::ReadWrite | QIODevice::Text) )
+    {
+        qDebug() << file.errorString();
+        return ;
+    }
+
+    // Write data to file
+    QTextStream stream(&file);
+    QString separator(",");
+    stream << QString("Time");
+    for (int n = 0; n < logger.size(); ++n)
+    {
+        stream<<separator + getSignalText(n);
+    }
+    stream << separator<<endl;
+
+    for (int i = 0; i < logger.at(0).size()-1; ++i)
+    {
+        stream << QDateTime::fromMSecsSinceEpoch(qint64(logger.at(0).at(i).x())).toString(Qt::ISODateWithMs);
+        for (int n = 0; n < logger.size(); ++n)
+        {
+            stream << separator << QString::number(logger.at(n).at(i).y());
+        }
+        stream << endl;
+    }
+    stream.flush();
+    file.close();
+    resumeLogging();
+}
+
+void ScopeServer::readFromCSV(const QString & filepath)
+{
+    // Open csv-file
+    pauseLogging();
+    pauseChartviewRefresh();
+    //QString path = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+    //QDir dir;
+    //QFile file(path + "\\file.csv");
+    std::string x =filepath.toStdString().substr(filepath.toStdString().find("///") + 3);
+
+    QFile file(QString::fromUtf8(x.c_str()));
+    if (!file.open(QIODevice::ReadOnly)) {
+                    qDebug() << file.errorString();
+                    return ;
+                }
+    else {
+        qDebug()<<"File read";
+    }
+    QStringList wordList;
+    logger.clear();
+    int colums = file.readLine().split(',').count()-1;
+    qDebug()<<"Colums: "<<colums;
+    QVector<QPointF> points;
+
+    for (int c=0;c<colums-1;c++)
+    {
+        logger.append(points);
+    }
+    while (!file.atEnd())
+    {
+        QByteArray line = file.readLine();
+        QByteArray xpoint = line.split(',') .first();
+        QDateTime Date = QDateTime::fromString(xpoint,Qt::ISODateWithMs);
+        //qDebug()<<line;
+        for (int n=0;n<colums-1;n++)
+        {
+            logger[n].append(QPointF(qint64(Date.toMSecsSinceEpoch()),line.split(',').at(n+1).toDouble()));
+        }
+    }
+
+    _historicData=true;
+    frameMin = 0;
+    frameMax = 0;
+    _firstIndex=0;
+    _secondIndex=0;
+    emit createSeries();
+    emit refreshChart();
+    emit reScale();
 }
 void ScopeServer::update(QAbstractSeries *series,int index)
 {
 
-    if (series) {
+    if (series)
+    {
         QXYSeries *xySeries = static_cast<QXYSeries *>(series);
-
-//        m_index++;
-//        if (m_index > logger.count() - 1)
-//            m_index = 0;
-
         QVector<QPointF> points = logger.at(index);
         if(points.last().y()>max)
         {
             max=points.last().y();
-
         }
         if(points.last().y()<min)
         {

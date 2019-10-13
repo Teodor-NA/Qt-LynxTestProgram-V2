@@ -50,5 +50,6 @@
         <file>DescriptionText.qml</file>
         <file>VariableInfo.qml</file>
         <file>MyFrame.qml</file>
+        <file>icons/icons8-screenshot-50.png</file>
     </qresource>
 </RCC>

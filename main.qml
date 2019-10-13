@@ -62,17 +62,24 @@ Item
                 scopeServer.update(scopeView.series(n), n);
             }
 
-            //if(!scopeView.isZoomed())
-            //{
+            if(!scopeView.isZoomed())
+            {
                 scopeView.xaxis_max = new Date()
-                var today = new Date();
+                //var today = new Date();
                 scopeView.xaxis_min = new Date(new Date() - scopeView.deltaX)
-            //}
+            }
+            else
+            {
+                scopeView.xaxis_max = new Date(new Date() - scopeView.offsetFromCurrentTime)
+
+                scopeView.xaxis_min = new Date(scopeView.xaxis_max - scopeView.deltaX)
+
+            }
         }
         onReScale:
         {
-            scopeView.resizeHorizontal()
             scopeView.autoscale()
+
         }
     }
 
@@ -178,41 +185,12 @@ Item
                 filename:"icons8-folder-50"
                 tooltip: "Load File"
                 onClicked:fileDialogRead.visible = true
+
             }
 
             Image {
                 source: "/icons/icons8-separator-50.png"
                 visible: topRibbon.graphButtonsVisible
-            }
-
-            IconButton
-            {
-                id: addSignal
-                filename:"icons8-add-new-50"
-                visible: topRibbon.graphButtonsVisible
-                tooltip: "Add signal"
-                onClicked:
-                {
-                    scopeView.maxNumberOfSignals = scopeServer.getNumberOfSignals()
-
-                    if(scopeView.numberOfSignals<scopeView.maxNumberOfSignals)
-                        scopeView.numberOfSignals++
-
-                    scopeView.changeSeriesType("line")
-                }
-            }
-
-            IconButton
-            {
-                id:removeSignal
-                filename:"icons8-reduce-50"
-                visible: topRibbon.graphButtonsVisible
-                tooltip: "Remove signal"
-                onClicked:{
-                    if(scopeView.numberOfSignals>1)
-                        scopeView.numberOfSignals--
-                    scopeView.changeSeriesType("line")
-                }
             }
 
             IconButton
@@ -225,25 +203,35 @@ Item
                 onClicked:{
                     if (enabled){
                         enabled = false
+
                         filename = "icons8-plot-50"
-                        scopeView.changeSeriesType("scatter");
+                        scopeView.changeSeriesType("line");
                     }
                     else{
                         enabled = true
                         filename = "icons8-scatter-plot-50"
-                        scopeView.changeSeriesType("line");
+                        scopeView.changeSeriesType("scatter");
                     }
                 }
             }
 
             IconButton
             {
+                id:playButton
                 property bool enabled: false
+                property bool resumeRealTimer: false
                 visible: topRibbon.graphButtonsVisible
                 filename: "icons8-play-50"
                 tooltip: "Live view"
                 onClicked:{
-                    if (enabled){
+                    if(resumeRealTimer)
+                    {
+                        resumeRealTimer=false
+                        scopeView.deltaX = 10000 //Reset default
+                        scopeServer.resumeRealtime()
+                    }
+
+                    else if (enabled){
                         enabled = false
                         filename = "icons8-play-50"
                         scopeServer.pauseChartviewRefresh();
@@ -255,13 +243,20 @@ Item
                     }
                 }
             }
-
+            IconButton{
+                visible: topRibbon.graphButtonsVisible
+                filename: "icons8-screenshot-50"
+                tooltip: "Screenshot"
+                onClicked: {
+                    scopeView.screenShot()
+                }
+            }
             IconButton{
                 visible: topRibbon.graphButtonsVisible
                 filename: "icons8-expand-50"
                 tooltip: "Autoscale all"
                 onClicked: {
-                    scopeView.resizeHorizontal()
+                    //scopeView.resizeHorizontal()
                     scopeView.autoscale()
                 }
             }
@@ -278,7 +273,7 @@ Item
                 visible: topRibbon.graphButtonsVisible
                 filename: "icons8-resize-vertical-50"
                 tooltip: "Autoscale Y"
-                onClicked: scopeView.autoscale()
+                onClicked: scopeView.resizeVertial()
             }
 
             Image {
@@ -372,12 +367,14 @@ Item
     FileDialog
     {
         id: fileDialogWrite
+
+        selectExisting: false
         title: "Please choose a file"
-        // fileMode: FileDialog.SaveFile
-        // folder:   StandardPaths.standardLocations(StandardPaths.PicturesLocation)
+        folder: shortcuts.desktop
         nameFilters: [ "Text files (*.csv)" ]
         onAccepted: {
-                scopeServer.writeToCSV(fileDialogWrite.file)
+            console.log("file: "+fileUrl)
+                scopeServer.writeToCSV(fileDialogWrite.fileUrl)
         }
         onRejected: {
             console.log("Canceled")
@@ -386,14 +383,21 @@ Item
 
     FileDialog
     {
+
         id: fileDialogRead
+        selectExisting: true
+        sidebarVisible :true
+        //modality: Qt.w
         title: "Please choose a file"
         // fileMode: FileDialog.OpenFile
-        // folder:   StandardPaths.standardLocations(StandardPaths.PicturesLocation)
+        folder: shortcuts.desktop
         nameFilters: [ "Text files (*.csv)" ]
         onAccepted:
         {
-            scopeServer.readFromCSV(fileDialogRead.file)
+            scopeServer.readFromCSV(fileDialogRead.fileUrl)
+            playButton.resumeRealTimer = true;
+            playButton.filename = "icons8-realtime-50"
+
         }
         onRejected:
         {
