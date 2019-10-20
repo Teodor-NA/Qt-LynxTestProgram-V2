@@ -29,15 +29,15 @@ void BackEnd::readData()
 
     if(_receiveInfo.state != LynxLib::eNoChange)
     {
-        qDebug() << "";
-        qDebug() << "------------- Received ----------------";
-        qDebug() << QString::asprintf("Device ID: 0x%x", _receiveInfo.deviceId);
-        qDebug() << QString::asprintf("Struct ID: 0x%x", _lynx.structId(_receiveInfo.lynxId));
-        qDebug() << "Struct Index: " << _receiveInfo.lynxId.structIndex;
-        qDebug() << "Variable Index: " << _receiveInfo.lynxId.variableIndex;
-        qDebug() << "Length: " << _receiveInfo.dataLength;
-        qDebug() << "State: " << LynxTextList::lynxState(_receiveInfo.state);
-        qDebug() << "---------------------------------------";
+//        qDebug() << "";
+//        qDebug() << "------------- Received ----------------";
+//        qDebug() << QString::asprintf("Device ID: 0x%x", _receiveInfo.deviceId);
+//        qDebug() << QString::asprintf("Struct ID: 0x%x", _lynx.structId(_receiveInfo.lynxId));
+//        qDebug() << "Struct Index: " << _receiveInfo.lynxId.structIndex;
+//        qDebug() << "Variable Index: " << _receiveInfo.lynxId.variableIndex;
+//        qDebug() << "Length: " << _receiveInfo.dataLength;
+//        qDebug() << "State: " << LynxTextList::lynxState(_receiveInfo.state);
+//        qDebug() << "---------------------------------------";
 
         if(_receiveInfo.state == LynxLib::eNewDataReceived)
         {

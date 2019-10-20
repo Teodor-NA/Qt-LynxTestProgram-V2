@@ -63,33 +63,106 @@ void ScopeServer::newDataRecived()
     }
 
 }
-void ScopeServer::calcMinMaxY()
+
+void ScopeServer::calcAxisIndex(qint64 msMin, qint64 msMax)
 {
-    double min_=0;
-    double max_=0;
+    qDebug() << "msMin:" << msMin;
+    qDebug() << "msMax:" << msMax;
 
-    for (int i=0;i<logger.count();i++)
+    if (logger.count() < 1)
     {
-        //double delta = logger[0].at(logger[i].count()-1).x()-logger[i].at(logger[i].count()-2).x();
-        QList<double> liste;
-        liste.reserve(abs(_secondIndex-_firstIndex));
-        for (int n=_firstIndex;n<_secondIndex;n++)
-        {
-            liste.append(logger[i].at(n).y());
-
-        }
-        auto mm = std::minmax_element(liste.begin(), liste.end());
-        qDebug()<<"min: "<< *mm.first<<"Max: "<<*mm.second;
-        if(*mm.first < min_)
-            min_ = *mm.first;
-        if(*mm.second > max_)
-            max_ = *mm.second;
+        qDebug() << "Nothing to scale.";
+        return;
+    }
+    if (logger.at(0).count() < 1)
+    {
+        qDebug() << "A signal exists, but there is nothing in it.";
+        return;
     }
 
-    //qDebug() << "min: "<<*mm.first <<" max " << *mm.second;
-    frameMin = min_;
-    frameMax = max_;
+    double maxValue = logger.at(0).at(0).y();
+    double minValue = logger.at(0).at(0).y();
+
+    int startIndex, endIndex;
+
+    // qint64 closestStart, closestEnd;
+
+    for (int i = 0; i < logger.count(); i++)
+    {
+        startIndex = 0;
+        endIndex = logger.at(i).count();
+
+        // closestStart = qint64(logger.at(i).at(startIndex).x());
+        // closestEnd = qint64(logger.at(i).at(endIndex).x());
+
+        for (int j = (logger.at(i).count() - 1); j >= 0; j--)
+        {
+            if (qint64(logger.at(i).at(j).x()) <= msMax)
+            {
+                endIndex = j;
+                break;
+            }
+        }
+
+        for (int j = endIndex; j >= 0; j--)
+        {
+            if (qint64(logger.at(i).at(j).x()) <= msMin)
+            {
+                startIndex = j;
+                break;
+            }
+        }
+
+        qDebug() << "Start index: " << startIndex;
+        qDebug() << "End index: " << endIndex;
+        qDebug() << "Value at start index: " << logger.at(i).at(startIndex).x();
+        qDebug() << "Value at end index: " << logger.at(i).at(endIndex).x();
+
+        for (int j = startIndex; j <= endIndex; j++)
+        {
+            if (logger.at(i).at(j).y() < minValue)
+                minValue = logger.at(i).at(j).y();
+
+            if (logger.at(i).at(j).y() > maxValue)
+                maxValue = logger.at(i).at(j).y();
+        }
+    }
+
+    qDebug() << "Max value: " << maxValue;
+    qDebug() << "Min value: " << minValue;
+
+    frameMin = minValue;
+    frameMax = maxValue;
+
 }
+
+//void ScopeServer::calcMinMaxY()
+//{
+//    double min_=0;
+//    double max_=0;
+
+//    for (int i = 0; i < logger.count(); i++)
+//    {
+//        //double delta = logger[0].at(logger[i].count()-1).x()-logger[i].at(logger[i].count()-2).x();
+//        QList<double> liste;
+//        liste.reserve(abs(_secondIndex-_firstIndex));
+//        for (int n=_firstIndex;n<_secondIndex;n++)
+//        {
+//            liste.append(logger[i].at(n).y());
+
+//        }
+//        auto mm = std::minmax_element(liste.begin(), liste.end());
+//        qDebug()<<"min: "<< *mm.first<<"Max: "<<*mm.second;
+//        if(*mm.first < min_)
+//            min_ = *mm.first;
+//        if(*mm.second > max_)
+//            max_ = *mm.second;
+//    }
+
+//    //qDebug() << "min: "<<*mm.first <<" max " << *mm.second;
+//    frameMin = min_;
+//    frameMax = max_;
+//}
 
 void ScopeServer::writeToCSV(const QString &filepath)
 {
@@ -177,8 +250,6 @@ void ScopeServer::readFromCSV(const QString & filepath)
     _historicData=true;
     frameMin = 0;
     frameMax = 0;
-    _firstIndex=0;
-    _secondIndex=0;
     emit createSeries();
     emit refreshChart();
     emit reScale();

@@ -274,13 +274,16 @@ ChartView {
     {
 
         scopeServer.calcAxisIndex(xaxis_min.getTime(),xaxis_max.getTime())
-        scopeServer.calcMinMaxY();
+        // scopeServer.calcMinMaxY();
         var maxY = scopeServer.getFrameMaxY()//ms of chart
         var minY = scopeServer.getFrameMinY()//ms of chart
-        axisY1.max=maxY*1.075
-        axisY1.min=minY*1.075
-        axisY2.max=maxY*1.075
-        axisY2.min=minY*1.075
+
+        var margin = (maxY - minY)*0.075
+
+        axisY1.max = maxY + margin
+        axisY1.min = minY - margin
+        // axisY2.max = maxY*1.075
+        // axisY2.min = minY*1.075
     }
 
     function autoscale()
