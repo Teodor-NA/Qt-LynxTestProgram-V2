@@ -267,12 +267,23 @@ void BackEnd::selectStruct(int infoIndex)
                 data = "Not set";
             }
 
+            bool checked = false;
+            for (int j = 0; j < _plotItems.count(); j++)
+            {
+                if (tempId == _plotItems.at(j).id)
+                {
+                    checked = true;
+                    break;
+                }
+            }
+
             this->addVariable(
                 QString(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variables.at(i).description),
                 i,
                 QString(LynxTextList::lynxDataType(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variables.at(i).dataType)),
                 data,
-                (LynxLib::accessMode(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variables.at(i).dataType) == LynxLib::eReadWrite)
+                (LynxLib::accessMode(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variables.at(i).dataType) == LynxLib::eReadWrite),
+                checked
             );
         }
 
@@ -355,9 +366,9 @@ void BackEnd::pullStruct(int structIndex)
     _uart.pullDatagram(tmpId);
 }
 
-void BackEnd::startPeriodic(unsigned int interval)
+void BackEnd::startPeriodic(unsigned int interval, int structIndex)
 {
-    LynxId tmpId = this->findStructId();
+    LynxId tmpId(structIndex);
 
     if (tmpId.structIndex < 0)
     {
@@ -369,9 +380,9 @@ void BackEnd::startPeriodic(unsigned int interval)
     _uart.remotePeriodicStart(tmpId, interval);
 }
 
-void BackEnd::stopPeriodic()
+void BackEnd::stopPeriodic(int structIndex)
 {
-    LynxId tmpId = this->findStructId();
+    LynxId tmpId(structIndex);
 
     if (tmpId.structIndex < 0)
     {
@@ -432,8 +443,8 @@ void BackEnd::sendVariable(int structIndex, int variableIndex, const QString & v
 }
 
 
-LynxId BackEnd::findStructId(int variableIndex)
-{
+//LynxId BackEnd::findStructId(int variableIndex)
+//{
 //    for (int i = 0; i < _addedStructs.count(); i++)
 //    {
 //        if ((_addedStructs.at(i).deviceIndex == _selectedDevice) && (_addedStructs.at(i).structIndex == _selectedStruct))
@@ -447,8 +458,8 @@ LynxId BackEnd::findStructId(int variableIndex)
 //        }
 //    }
 
-    return LynxId();
-}
+//    return LynxId();
+//}
 
 void BackEnd::fullscreenButtonClicked()
 {
@@ -464,6 +475,45 @@ void BackEnd::fullscreenButtonClicked()
     }
 
     emit fullscreenChanged();
+}
+
+int BackEnd::changePlotItem(int structIndex, int variableIndex, const QString & name, bool checked)
+{
+    LynxId tmpId(structIndex, variableIndex);
+
+    for (int i = 0; i < _plotItems.count(); i++)
+    {
+        if (tmpId == _plotItems.at(i).id)
+        {
+            if (checked)
+            {
+                qDebug() << "Item:" << name << "was not added since it is already in the list.";
+                return 0;
+            }
+            else
+            {
+                _plotItems.remove(i);
+                qDebug() << "Item:" << name << "was removed from the list.";
+                qDebug() << "Count is now:" << _plotItems.count();
+                return -1;
+            }
+        }
+    }
+
+    if (!checked)
+    {
+        qDebug() << "Item:" << name << "was not removed, since it was not in the list.";
+        return 0;
+    }
+
+    _plotItems.append();
+    _plotItems.last().id = tmpId;
+    _plotItems.last().name = name;
+
+    qDebug() << "Item" << _plotItems.last().name << "with structIndex:" << _plotItems.last().id.structIndex << "and variableIndex:" << _plotItems.last().id.variableIndex << "was added";
+    qDebug() << "Count is now:" << _plotItems.count();
+
+    return 1;
 }
 
 //void BackEnd::sendData(int structIndex, int variableIndex)

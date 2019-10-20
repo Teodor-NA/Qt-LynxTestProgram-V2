@@ -60,15 +60,18 @@ Item {
         variableModel.clear()
     }
 
-    function addVariable(variableName, variableIndex, variableType, variableValue, enableInput)
+    function addVariable(variableName, variableIndex, variableType, variableValue, enableInput, checked)
     {
+       // console.log("variableIndex: " + variableIndex + ", variableName: " + variableName + ", checked: " + checked)
+
         variableModel.append(
             {
                 variableNameIn: variableName,
                 variableIndexIn: variableIndex,
                 variableTypeIn: variableType,
                 variableValueIn: variableValue,
-                enableInputIn: enableInput
+                enableInputIn: enableInput,
+                checkedIn: checked
             }
         )
     }
@@ -87,7 +90,8 @@ Item {
             return
         }
 
-        variableModel.setProperty(variableIndex, "variableValueIn", value)
+        // variableModel.setProperty(variableIndex, "variableValueIn", value)
+        variableModel.get(variableIndex).variableValueIn = value
     }
 
     Row
@@ -243,9 +247,11 @@ Item {
             Row
             {
                 spacing: 10
+                width: parent.width
 
                 Button
                 {
+                    width: evenWidthSpacing(parent)
                     text: "Add struct"
                     font.pixelSize: 15
                     enabled: (structComboBox.currentIndex > 0) && (structInfo.structIndex < 0)
@@ -254,10 +260,133 @@ Item {
 
                 Button
                 {
+                    width: evenWidthSpacing(parent)
                     text: "Pull Struct"
                     font.pixelSize: 15
                     enabled: (structInfo.structIndex >= 0)
                     onClicked: backEnd.pullStruct(structInfo.structIndex)
+                }
+            }
+
+            Row
+            {
+                id: timerRow
+
+                property string activeTimer: ""
+
+                spacing: 10
+                width: parent.width
+
+                function startPeriodic()
+                {
+
+                    if (timerInput.text > -1)
+                    {
+                       activeTimer = timerInput.text
+                       backEnd.startPeriodic(activeTimer, structInfo.structIndex)
+                    }
+                    else
+                    {
+                       activeTimer = ""
+                       stopPeriodic()
+                    }
+
+                    timerInput.text = ""
+                }
+
+                function stopPeriodic()
+                {
+                    activeTimer = ""
+                    backEnd.stopPeriodic(structInfo.structIndex)
+                }
+
+                TextField
+                {
+                    id: timerInput
+                    enabled: (structInfo.structIndex >= 0)
+                    width: evenWidthSpacing(parent)
+                    font.pixelSize: 15
+                    placeholderText: "Periodic time"
+                    validator: IntValidator{}
+                    onActiveFocusChanged:
+                    {
+                        if (activeFocus)
+                            selectAll()
+                    }
+                    onAccepted: timerRow.startPeriodic()
+                }
+
+                Button
+                {
+                    id: timerStartButton
+                    width: evenWidthSpacing(parent)
+                    text: "Start periodic"
+                    font.pixelSize: 15
+                    enabled: (structInfo.structIndex >= 0)
+                    onClicked: timerRow.startPeriodic()
+
+                }
+
+                Button
+                {
+                    // id: timerButton
+                    width: evenWidthSpacing(parent)
+                    text: "Stop periodic"
+                    font.pixelSize: 15
+                    enabled: (structInfo.structIndex >= 0)
+                    onClicked: timerRow.stopPeriodic()
+
+                }
+
+            }
+
+            Label
+            {
+                width: parent.width // evenWidthSpacing(parent)
+                height: 20
+                text: (timerRow.activeTimer === "") ? "Stopped" : qsTr("Active: " + timerRow.activeTimer + "ms")
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+                font.pixelSize: 15
+            }
+
+            Button
+            {
+                width: parent.width
+                text: "Send to plotter"
+                font.pixelSize: 15
+                enabled: (structInfo.structIndex >= 0)
+                onClicked:
+                {
+                    var signalsAdded = 0
+                    var signalsRemoved = 0
+
+                    for (var i = 0; i < variableModel.count; i++)
+                    {
+                        var tmp = variableModel.get(i)
+
+                        var state = backEnd.changePlotItem(structInfo.structIndex, tmp.variableIndexIn, tmp.variableNameIn, tmp.checkedOut)
+                            if (state > 0)
+                                signalsAdded++
+                            else if (state < 0)
+                                signalsRemoved++
+
+                    }
+
+                    if (signalsAdded === 0)
+                        console.log("Nothing was added.")
+                    else if (signalsAdded === 1)
+                        console.log("One signal was added to the plotter.")
+                    else
+                        console.log(signalsAdded + " signals were added to the plotter.")
+
+                    if (signalsRemoved === 0)
+                        console.log("Nothing was removed.")
+                    else if (signalsRemoved === 1)
+                        console.log("One signal was removed from the plotter.")
+                    else
+                        console.log(signalsRemoved + " signals were removed from the plotter.")
+
                 }
             }
         }
@@ -279,17 +408,6 @@ Item {
 
             }
         }
-
-//        Column
-//        {
-//            spacing: 10
-
-//            VariableInfo
-//            {
-
-//            }
-
-//        }
     }
 
     ListModel
@@ -298,11 +416,13 @@ Item {
 
         ListElement
         {
+            checkedOut: false
             checkedIn: false
             variableNameIn: "No selection"
             variableIndexIn: -1
             variableTypeIn: "No Selection"
             variableValueIn: "No selection"
+            // variableValueOut: "No selection"
             enableInputIn: false
         }
 
@@ -314,13 +434,34 @@ Item {
 
         VariableInfo
         {
-            checked: checkedIn
             variableName: variableNameIn
             variableIndex: variableIndexIn
             structIndex: structInfo.structIndex
             variableType: variableTypeIn
             variableValue: variableValueIn
             enableInput: enableInputIn
+            checkedInput: checkedIn
+            onCheckedChanged: checkedOut = checked
         }
+    }
+
+    function starWidthSpacing(parent, ratio)
+    {
+        return (parent.width - 2*parent.padding - (parent.children.length - 1)*parent.spacing)*ratio
+    }
+
+    function evenWidthSpacing(parent)
+    {
+        return (parent.width - 2*parent.padding - (parent.children.length - 1)*parent.spacing)/parent.children.length
+    }
+
+    function starHeightSpacing(parent, ratio)
+    {
+        return (parent.height - 2*parent.padding - (parent.children.length - 1)*parent.spacing)*ratio
+    }
+
+    function evenHeightSpacing(parent)
+    {
+        return (parent.height - 2*parent.padding - (parent.children.length - 1)*parent.spacing)/parent.children.length
     }
 }

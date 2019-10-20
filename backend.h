@@ -41,6 +41,12 @@
 //public slots:
 //};
 
+struct PlotItem
+{
+    QString name;
+    LynxId id;
+};
+
 class BackEnd : public QObject
 {
     Q_OBJECT
@@ -65,9 +71,11 @@ class BackEnd : public QObject
     LynxList<LynxDynamicId> _dynamicIds;
     // LynxList<AddedStruct> _addedStructs;
 
+    LynxList<PlotItem> _plotItems;
+
     bool _fullscreen;
 
-    LynxId findStructId(int variableIndex = -1);
+    // LynxId findStructId(int variableIndex = -1);
 
 public:
     explicit BackEnd(QObject *parent = nullptr);
@@ -84,7 +92,7 @@ signals:
     void addStructInfo(const QString & description, const QString & id, const QString & count);
     void addStructIndex(int structIndex);
     void clearVariableList();
-    void addVariable(const QString & variableName, int variableIndex, const QString & variableType, const QString & variableValue, bool enableInput);
+    void addVariable(const QString & variableName, int variableIndex, const QString & variableType, const QString & variableValue, bool enableInput, bool checked);
     void changeVariableValue(int structIndex, int variableIndex, const QString & value);
     void fullscreenChanged();
 
@@ -98,11 +106,12 @@ public slots:
     void selectStruct(int infoIndex);
     int generateStruct();
     void pullStruct(int structIndex);
-    void startPeriodic(unsigned int interval);
-    void stopPeriodic();
+    void startPeriodic(unsigned int interval, int structIndex = -1);
+    void stopPeriodic(int structIndex = -1);
     void sendVariable(int structIndex, int variableIndex, const QString & value);
     bool uartConnected() { return _uart.opened(); }
     void fullscreenButtonClicked();
+    int changePlotItem(int structIndex, int variableIndex, const QString & name, bool checked);
     // void sendData(int structIndex, int variableIndex);
 
 };

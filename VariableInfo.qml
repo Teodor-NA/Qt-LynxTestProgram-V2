@@ -9,10 +9,9 @@ MyFrame
     property var structIndex: -1
     property var variableIndex: -1
     property string variableType: "Not Set"
-    property string variableValue: "Not set"
+    property string variableValue: textInput.text
     property bool enableInput: false
-    // onCheckedChanged: console.log("checked: " + checked)
-    onVariableValueChanged: textInput.text = variableValue
+    property bool checkedInput: false
 
     implicitHeight: 120
     implicitWidth: 400
@@ -25,7 +24,18 @@ MyFrame
         CheckBox
         {
             id: checkBox
+            checked: myFrame.checkedInput
             anchors.verticalCenter: parent.verticalCenter
+            visible: ((variableType !== "Not set") && (variableType !== "String"))
+        }
+
+        Rectangle
+        {
+            width: checkBox.width
+            height: checkBox.height
+            anchors.verticalCenter: parent.verticalCenter
+            visible: !checkBox.visible
+            color: "transparent"
         }
 
         Column
@@ -76,7 +86,7 @@ MyFrame
                         padding: 10
                         width: parent.width - 2*padding
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "Not set"
+                        text: myFrame.variableValue
                         font.pixelSize: 15
                         enabled: enableInput
                         onActiveFocusChanged:
@@ -87,7 +97,6 @@ MyFrame
                         onAccepted:
                         {
                             backEnd.sendVariable(myFrame.structIndex, myFrame.variableIndex, text)
-                            // text = variableValue
                         }
                         // onTextChanged: variableValue = text
                     }
