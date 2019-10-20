@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     QQuickView viewer;
 
     BackEnd backEnd(&viewer);
-    ScopeServer scopeServer(&viewer);
+    ScopeServer scopeServer(backEnd.lynx(), &viewer);
 
     viewer.rootContext()->setContextProperty("backEnd", &backEnd);
     viewer.rootContext()->setContextProperty("scopeServer", &scopeServer);

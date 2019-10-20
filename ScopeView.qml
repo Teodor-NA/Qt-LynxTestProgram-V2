@@ -231,7 +231,7 @@ ChartView {
     ValueAxis {
         id: axisY1
         min: -1
-        max: 1
+        max: 255
 
     }
 
@@ -299,7 +299,7 @@ ChartView {
             if (type === "line")
             {
                 var series1 = chartView.createSeries(ChartView.SeriesTypeLine, scopeServer.getSignalText(n), axisX, axisY1);
-                series1.color = scopeServer.getSignalColor(n)
+                // series1.color = scopeServer.getSignalColor(n)
                 series1.useOpenGL = true;
             }
             else

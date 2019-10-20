@@ -27,6 +27,10 @@ MyFrame
             checked: myFrame.checkedInput
             anchors.verticalCenter: parent.verticalCenter
             visible: ((variableType !== "Not set") && (variableType !== "String"))
+            onCheckedChanged:
+            {
+                scopeServer.changePlotItem(structIndex, variableIndex, checked)
+            }
         }
 
         Rectangle

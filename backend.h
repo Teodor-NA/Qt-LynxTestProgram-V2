@@ -81,6 +81,8 @@ public:
     explicit BackEnd(QObject *parent = nullptr);
     ~BackEnd() { _uart.close(); }
 
+    LynxManager * lynx() {return &_lynx; }
+
 signals:
     void clearPortList();
     void addPort(const QString & portName);

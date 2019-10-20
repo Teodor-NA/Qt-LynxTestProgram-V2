@@ -479,6 +479,7 @@ void BackEnd::fullscreenButtonClicked()
 
 int BackEnd::changePlotItem(int structIndex, int variableIndex, const QString & name, bool checked)
 {
+
     LynxId tmpId(structIndex, variableIndex);
 
     for (int i = 0; i < _plotItems.count(); i++)

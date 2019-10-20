@@ -7,20 +7,23 @@
 #include <QTime>
 #include <QList>
 #include <QAbstractSeries>
+#include "LynxStructure.h"
+
+struct LoggerInfo
+{
+    int index;      // Index of logger list
+    LynxId id;      // Id of logging signal
+    QString name;   // Name of signal
+    QString unit;   // Optional: signal unit
+    QString color;  // Chart color if needed
+};
 
 QT_CHARTS_USE_NAMESPACE
 class ScopeServer : public QObject
 {
     Q_OBJECT
-    struct loggerInfo
-    {
-        int index;//index of logger list
-        QString name;//name of signal
-        QString unit;//optional: signal unit
-        QString color;//chart color if needed
-    };
 
-    QList<loggerInfo> signalInformation;
+    QList<LoggerInfo> signalInformation;
     QList<QVector<QPointF>> logger;
     bool _seriesCreated;
     bool _haltChartRefresh;
@@ -35,9 +38,11 @@ class ScopeServer : public QObject
     double frameMax;
     int _firstIndex;
     int _secondIndex;
-    void createDemo();
+    // void createDemo();
+    LynxManager * _lynx;
+
 public:
-    explicit ScopeServer(QObject *parent = nullptr);
+    explicit ScopeServer(LynxManager * lynx, QObject *parent = nullptr);
 
 signals:
     void reScale();
@@ -47,11 +52,11 @@ signals:
 public slots:
     void resumeRealtime()
     {
-        logger.clear();
-        signalInformation.clear();
-        createDemo();
+        // logger.clear();
+        // signalInformation.clear();
+        // createDemo();
         emit createSeries();
-        _haltLogging = false;
+        // _haltLogging = false;
         _haltChartRefresh = false;
     }
     // Return the number of signals that should be logged
@@ -64,11 +69,12 @@ public slots:
     // Starts the chartview refresh emit
     void resumeChartviewRefresh()
     {
-        if(!_seriesCreated)
-        {
-            _seriesCreated=true;
-            emit createSeries();
-        }
+        // if(!_seriesCreated)
+        // {
+        //     return;
+        //     // _seriesCreated = true;
+        //     // emit createSeries();
+        // }
         _haltChartRefresh = false;
     }
 
@@ -148,6 +154,8 @@ public slots:
     // Get signalText
     const QString getSignalText(int index) { return signalInformation.at(index).name; }
     const QString getSignalColor(int index) { return signalInformation.at(index).color; }
+
+    int changePlotItem(int structIndex, int variableIndex, bool checked);
 };
 
 #endif // SCOPESERVER_H
