@@ -273,7 +273,9 @@ Item
                 visible: topRibbon.graphButtonsVisible
                 filename: "icons8-resize-vertical-50"
                 tooltip: "Autoscale Y"
-                onClicked: scopeView.resizeVertial()
+                onClicked: {scopeView.resizeVertial()
+
+                }
             }
 
             Image {
@@ -318,12 +320,79 @@ Item
             GraphWindowForm
             {
                 id: graphPage
+                Rectangle
+                {
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    height: parent.height
+                    width: parent.width*0.2
 
+                    Column
+                    {
+                        ButtonGroup
+                        {
+                            id: childGroup
+                            exclusive: false
+                            checkState: parentBox.checkState
+                        }
+                        CheckBox
+                        {
+                            id: parentBox
+                            text: qsTr("Parent")
+                            checkState: childGroup.checkState
+                        }
+
+                        ListView
+                        {
+                            id:listViewer
+                            model: listCheckModel
+                            delegate: myCheckDelegate
+                            width: 200
+                            height: 150
+                        }
+                        ListModel
+                        {
+                            id: listCheckModel
+//                            ListElement {
+//                                name: "Item 1"
+//                            }
+//                                description: "Selectable item 1"
+//                                selected: true
+//                            }
+                        }
+                        Component
+                        {
+                            id:myCheckDelegate
+                            CheckBox
+                            {
+                                checked: true
+                                text: name
+                                property var varindex: varindexin
+                                leftPadding: indicator.width
+                                ButtonGroup.group: childGroup
+                                onCheckedChanged:
+                                {
+                                    console.log("index is: "+varindex)
+                                    if(checked && index>=0)
+                                    {
+                                        scopeView.series(index).visible=true
+                                    }
+                                    else if(!checked && index>=0)
+                                    {
+                                        scopeView.series(index).visible=false
+                                    }
+                                }
+                            }
+                        }
+                    }//colum
+                }//rectangle
                 ScopeView
                 {
                     id: scopeView
-                    anchors.fill: parent
-                   // anchors.centerIn: parent
+                    anchors.right:  parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    height: parent.height
+                    width: parent.width*0.8
                 }
             }
 

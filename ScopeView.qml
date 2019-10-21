@@ -298,12 +298,17 @@ ChartView {
         chartView.removeAllSeries();
         for(var n=0; n<scopeServer.getNumberOfSignals();n++)
         {
+            //listCheckModel.clear()
+            listCheckModel.append({
+                name:scopeServer.getSignalText(n),varindexin:n,checked:true
+            })
             //console.log(n)
             if (type === "line")
             {
                 var series1 = chartView.createSeries(ChartView.SeriesTypeLine, scopeServer.getSignalText(n), axisX, axisY1);
                 // series1.color = scopeServer.getSignalColor(n)
                 series1.useOpenGL = true;
+
             }
             else
             {

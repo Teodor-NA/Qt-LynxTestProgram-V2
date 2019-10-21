@@ -6,8 +6,8 @@
 #include <QtCharts/QAreaSeries>
 ScopeServer::ScopeServer(LynxManager * lynx, QObject *parent) : QObject(parent), _lynx(lynx)
 {
-    _haltChartRefresh = true;
-    _seriesCreated = false;
+    _haltChartRefresh = false;
+    //_seriesCreated = false;
     _historicData = false;
 
     // createDemo();

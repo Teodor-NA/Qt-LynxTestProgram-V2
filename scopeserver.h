@@ -25,7 +25,7 @@ class ScopeServer : public QObject
 
     QList<LoggerInfo> signalInformation;
     QList<QVector<QPointF>> logger;
-    bool _seriesCreated;
+   // bool _seriesCreated;
     bool _haltChartRefresh;
     double max;
     double min;
