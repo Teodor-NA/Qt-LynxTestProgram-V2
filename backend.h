@@ -41,11 +41,11 @@
 //public slots:
 //};
 
-struct PlotItem
-{
-    QString name;
-    LynxId id;
-};
+//struct PlotItem
+//{
+//    QString name;
+//    LynxId id;
+//};
 
 class BackEnd : public QObject
 {
@@ -53,10 +53,11 @@ class BackEnd : public QObject
 
     Q_PROPERTY(bool fullscreen MEMBER _fullscreen NOTIFY fullscreenChanged)
 
-    LynxManager _lynx;
-    LynxUartQt _uart;
+    LynxManager * const _lynx;
+    LynxUartQt * const _uart;
 
-    LynxInfo _receiveInfo;
+
+    // LynxInfo _receiveInfo;
 
     QList<QSerialPortInfo> _portList;
     QSerialPortInfo _selectedPort;
@@ -71,17 +72,15 @@ class BackEnd : public QObject
     LynxList<LynxDynamicId> _dynamicIds;
     // LynxList<AddedStruct> _addedStructs;
 
-    LynxList<PlotItem> _plotItems;
+    // LynxList<PlotItem> _plotItems;
 
     bool _fullscreen;
 
     // LynxId findStructId(int variableIndex = -1);
 
 public:
-    explicit BackEnd(QObject *parent = nullptr);
-    ~BackEnd() { _uart.close(); }
-
-    LynxManager * lynx() {return &_lynx; }
+    explicit BackEnd(LynxManager * const lynx, LynxUartQt * const uart, QObject *parent = nullptr);
+    // ~BackEnd() {}
 
 signals:
     void clearPortList();
@@ -97,10 +96,10 @@ signals:
     void addVariable(const QString & variableName, int variableIndex, const QString & variableType, const QString & variableValue, bool enableInput, bool checked);
     void changeVariableValue(int structIndex, int variableIndex, const QString & value);
     void fullscreenChanged();
+    LynxList<LynxId> getIdList();
 
 public slots:
     void scan();
-    void readData();
     void refreshPortList();
     void portSelected(int portIndex);
     void connectButtonClicked();
@@ -111,9 +110,11 @@ public slots:
     void startPeriodic(unsigned int interval, int structIndex = -1);
     void stopPeriodic(int structIndex = -1);
     void sendVariable(int structIndex, int variableIndex, const QString & value);
-    bool uartConnected() { return _uart.opened(); }
+    bool uartConnected() { return _uart->opened(); }
     void fullscreenButtonClicked();
-    int changePlotItem(int structIndex, int variableIndex, const QString & name, bool checked);
+    void newDataReceived(const LynxId & lynxId);
+    void newDeviceInfoReceived(const LynxDeviceInfo & deviceInfo);
+    // int changePlotItem(int structIndex, int variableIndex, const QString & name, bool checked);
     // void sendData(int structIndex, int variableIndex);
 
 };

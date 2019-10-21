@@ -22,6 +22,7 @@ SOURCES += \
         "../LynxStructure/lynxlistclasses.cpp" \
         backend.cpp \
         main.cpp \
+        qtlynxwrapper.cpp \
         scopeserver.cpp
 
 RESOURCES += qml.qrc
@@ -44,6 +45,7 @@ HEADERS += \
     "../LynxStructure/lynxlistclasses.h" \
     # "../LynxStructure/teststruct.h" \
     backend.h \
+    qtlynxwrapper.h \
     scopeserver.h
 
 INCLUDEPATH += \

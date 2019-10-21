@@ -3,6 +3,7 @@
 #include <QtQml/QQmlContext>
 #include <QQmlApplicationEngine>
 
+#include "qtlynxwrapper.h"
 #include "backend.h"
 #include "scopeserver.h"
 
@@ -15,15 +16,18 @@ int main(int argc, char *argv[])
 
     QQuickView viewer;
 
-    BackEnd backEnd(&viewer);
-    ScopeServer scopeServer(backEnd.lynx(), &viewer);
+    QtLynxWrapper lynx(&viewer);
+    BackEnd backEnd(lynx.lynxPointer(), lynx.lynxUartPointer(), &viewer);
+    ScopeServer scopeServer(lynx.lynxPointer(), &viewer);
 
+    viewer.rootContext()->setContextProperty("lynx", &lynx);
     viewer.rootContext()->setContextProperty("backEnd", &backEnd);
     viewer.rootContext()->setContextProperty("scopeServer", &scopeServer);
 
-    // qmlRegisterType<BackEnd>("backend", 1, 0, "BackEnd");
-
     QObject::connect(viewer.engine(), &QQmlEngine::quit, &viewer, &QWindow::close);
+    QObject::connect(&lynx, SIGNAL(newDataReceived(const LynxId &)), &backEnd, SLOT(newDataReceived(const LynxId &)));
+    QObject::connect(&lynx, SIGNAL(newDeviceInfoReceived(const LynxDeviceInfo &)), &backEnd, SLOT(newDeviceInfoReceived(const LynxDeviceInfo &)));
+    QObject::connect(&backEnd, SIGNAL(getIdList()), &scopeServer, SLOT(getIdList()));
 
     viewer.setTitle("Qt-Lynx Test Application");
     viewer.setSource(QUrl(QStringLiteral("qrc:/main.qml")));

@@ -5,6 +5,7 @@ MyFrame
 {
     id: myFrame
     property bool checked: checkBox.checked
+    property bool enableCheckbox: false
     property string variableName: "Not set"
     property var structIndex: -1
     property var variableIndex: -1
@@ -26,7 +27,7 @@ MyFrame
             id: checkBox
             checked: myFrame.checkedInput
             anchors.verticalCenter: parent.verticalCenter
-            visible: ((variableType !== "Not set") && (variableType !== "String"))
+            visible: ((variableType !== "Not set") && (variableType !== "String")) && enableCheckbox
             onCheckedChanged:
             {
                 scopeServer.changePlotItem(structIndex, variableIndex, checked)

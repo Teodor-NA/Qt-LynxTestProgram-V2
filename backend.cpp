@@ -1,9 +1,9 @@
 #include "backend.h"
 
-BackEnd::BackEnd(QObject *parent) :
+BackEnd::BackEnd(LynxManager * const lynx, LynxUartQt * const uart, QObject *parent) :
     QObject(parent),
-    _lynx(0x25, "Device 1"),
-    _uart(_lynx)
+    _lynx(lynx),
+    _uart(uart)
 {
    //  _uart.open(4, 115200);
 
@@ -12,104 +12,75 @@ BackEnd::BackEnd(QObject *parent) :
 
     _fullscreen = false;
 
-    connect(_uart.portPointer(), SIGNAL(readyRead()), this, SLOT(readData()));
 }
 
 void BackEnd::scan()
 {
     qDebug() << "\n------------ Sending Scan -------------\n";
-    _uart.scan();
+    _uart->scan();
     // this->clearDevices();
     // this->addDevice("desc");
 }
 
-void BackEnd::readData()
+void BackEnd::newDataReceived(const LynxId & lynxId)
 {
-    _receiveInfo = _uart.update();
 
-    if(_receiveInfo.state != LynxLib::eNoChange)
+    QString value;
+    LynxLib::E_LynxSimplifiedType tempType;
+
+    if (lynxId.variableIndex < 0)
     {
-//        qDebug() << "";
-//        qDebug() << "------------- Received ----------------";
-//        qDebug() << QString::asprintf("Device ID: 0x%x", _receiveInfo.deviceId);
-//        qDebug() << QString::asprintf("Struct ID: 0x%x", _lynx.structId(_receiveInfo.lynxId));
-//        qDebug() << "Struct Index: " << _receiveInfo.lynxId.structIndex;
-//        qDebug() << "Variable Index: " << _receiveInfo.lynxId.variableIndex;
-//        qDebug() << "Length: " << _receiveInfo.dataLength;
-//        qDebug() << "State: " << LynxTextList::lynxState(_receiveInfo.state);
-//        qDebug() << "---------------------------------------";
-
-        if(_receiveInfo.state == LynxLib::eNewDataReceived)
+        int varCount = _lynx->structVariableCount(lynxId.structIndex);
+        LynxId tempId = lynxId;
+        // All variables
+        for (int i = 0; i < varCount; i++)
         {
-            int dynamicIndex = -1;
+            tempId.variableIndex = i;
+            tempType = _lynx->simplifiedType(tempId);
 
-            for (int i = 0; i < _dynamicIds.count(); i++)
+            switch (tempType)
             {
-                if (_dynamicIds.at(i).structId == _receiveInfo.structId)
-                {
-                    dynamicIndex = i;
-                }
+            case LynxLib::eString:
+                value = QString(_lynx->getString(tempId));
+                break;
+            case LynxLib::eNumber:
+                value = QString::number(_lynx->getValue(tempId));
+                break;
+            default:
+                value = "Error";
+                break;
             }
 
-            if (dynamicIndex < 0)
-            {
-                qDebug() << "Dynamic Id not found";
-                return;
-            }
-
-            QString value;
-            LynxLib::E_LynxSimplifiedType tempType;
-
-            if (_receiveInfo.lynxId.variableIndex < 0)
-            {
-                LynxId tempId;
-                // All variables
-                for (int i = 0; i < _dynamicIds.at(dynamicIndex).variableIds.count(); i++)
-                {
-                    tempId = _dynamicIds.at(dynamicIndex).variableIds.at(i);
-                    tempType = _lynx.simplifiedType(tempId);
-                    switch (tempType)
-                    {
-                    case LynxLib::eString:
-                        value = QString(_lynx.getString(tempId));
-                        break;
-                    case LynxLib::eNumber:
-                        value = QString::number(_lynx.getValue(tempId));
-                        break;
-                    default:
-                        value = "Error";
-                        break;
-                    }
-
-                    this->changeVariableValue(tempId.structIndex, tempId.variableIndex, value);
-                }
-            }
-            else
-            {
-                // Single variable
-                tempType = _lynx.simplifiedType(_receiveInfo.lynxId);
-                switch (tempType)
-                {
-                case LynxLib::eString:
-                    value = QString(_lynx.getString(_receiveInfo.lynxId));
-                    break;
-                case LynxLib::eNumber:
-                    value = QString::number(_lynx.getValue(_receiveInfo.lynxId));
-                    break;
-                default:
-                    value = "Error";
-                    break;
-                }
-
-                this->changeVariableValue(_receiveInfo.lynxId.structIndex, _receiveInfo.lynxId.variableIndex, value);
-            }
-        }
-        else if (_receiveInfo.state == LynxLib::eNewDeviceInfoReceived)
-        {
-            _deviceInfoList.append(_uart.lynxDeviceInfo());
-            this->addDevice(QString(_deviceInfoList.last().description) + QString::asprintf(" - Id: 0x%x", _deviceInfoList.last().deviceId));
+            this->changeVariableValue(tempId.structIndex, tempId.variableIndex, value);
         }
     }
+    else
+    {
+        // Single variable
+        tempType = _lynx->simplifiedType(lynxId);
+        switch (tempType)
+        {
+        case LynxLib::eString:
+            value = QString(_lynx->getString(lynxId));
+            break;
+        case LynxLib::eNumber:
+            value = QString::number(_lynx->getValue(lynxId));
+            break;
+        default:
+            value = "Error";
+            break;
+        }
+
+        this->changeVariableValue(lynxId.structIndex, lynxId.variableIndex, value);
+    }
+
+
+}
+
+void BackEnd::newDeviceInfoReceived(const LynxDeviceInfo & deviceInfo)
+{
+    _deviceInfoList.append(deviceInfo);
+    this->addDevice(QString(_deviceInfoList.last().description) + QString::asprintf(" - Id: 0x%x", _deviceInfoList.last().deviceId));
 }
 
 void BackEnd::refreshPortList()
@@ -144,17 +115,17 @@ void BackEnd::portSelected(int portIndex)
 void BackEnd::connectButtonClicked()
 {
     // qDebug() << "Button clicked";
-    if (_uart.opened())
+    if (_uart->opened())
     {
         qDebug() << "Closing port";
-        _uart.close();
+        _uart->close();
     }
     else
     {
         qDebug() << "Attempting to open";
         qDebug() << _selectedPort.portName();
         qDebug() << _selectedPort.description();
-        if (_uart.open(_selectedPort, _baudrate))
+        if (_uart->open(_selectedPort, _baudrate))
             qDebug() << "Opened successfully";
         else
             qDebug() << "Open failed";
@@ -247,15 +218,15 @@ void BackEnd::selectStruct(int infoIndex)
             {
                 // Add the value if the struct is added
                 tempId.variableIndex = i;
-                LynxLib::E_LynxSimplifiedType dataType = _lynx.simplifiedType(tempId);
+                LynxLib::E_LynxSimplifiedType dataType = _lynx->simplifiedType(tempId);
 
                 switch (dataType)
                 {
                 case LynxLib::eString:
-                    data = QString(_lynx.getString(tempId));
+                    data = QString(_lynx->getString(tempId));
                     break;
                 case LynxLib::eNumber:
-                    data = QString::number(_lynx.getValue(tempId));
+                    data = QString::number(_lynx->getValue(tempId));
                     break;
                 default:
                     data = "Error";
@@ -268,9 +239,12 @@ void BackEnd::selectStruct(int infoIndex)
             }
 
             bool checked = false;
-            for (int j = 0; j < _plotItems.count(); j++)
+
+            LynxList<LynxId> idList = this->getIdList();
+
+            for (int j = 0; j < idList.count(); j++)
             {
-                if (tempId == _plotItems.at(j).id)
+                if (tempId == idList.at(j))
                 {
                     checked = true;
                     break;
@@ -286,11 +260,7 @@ void BackEnd::selectStruct(int infoIndex)
                 checked
             );
         }
-
-
-
     }
-
 }
 
 int BackEnd::generateStruct()
@@ -308,7 +278,7 @@ int BackEnd::generateStruct()
         return -1;
     }
 
-    LynxDynamicId temp = _lynx.addStructure(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct));
+    LynxDynamicId temp = _lynx->addStructure(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct));
 
     if (temp.structLynxId == LynxId())
     {
@@ -330,14 +300,14 @@ int BackEnd::generateStruct()
     for (int i = 0; i < _dynamicIds.last().variableIds.count(); i++)
     {
         tempId = _dynamicIds.last().variableIds.at(i);
-        tempType = _lynx.simplifiedType(tempId);
+        tempType = _lynx->simplifiedType(tempId);
         switch (tempType)
         {
         case LynxLib::eString:
-            value = QString(_lynx.getString(tempId));
+            value = QString(_lynx->getString(tempId));
             break;
         case LynxLib::eNumber:
-            value = QString::number(_lynx.getValue(tempId));
+            value = QString::number(_lynx->getValue(tempId));
             break;
         default:
             value = "Error";
@@ -363,7 +333,7 @@ void BackEnd::pullStruct(int structIndex)
     }
 
     qDebug() << "Pulling datagram";
-    _uart.pullDatagram(tmpId);
+    _uart->pullDatagram(tmpId);
 }
 
 void BackEnd::startPeriodic(unsigned int interval, int structIndex)
@@ -377,7 +347,7 @@ void BackEnd::startPeriodic(unsigned int interval, int structIndex)
     }
 
     qDebug() << "Starting periodic transmit at:" << interval << "ms interval";
-    _uart.remotePeriodicStart(tmpId, interval);
+    _uart->remotePeriodicStart(tmpId, interval);
 }
 
 void BackEnd::stopPeriodic(int structIndex)
@@ -391,7 +361,7 @@ void BackEnd::stopPeriodic(int structIndex)
     }
 
     qDebug() << "Stopping periodic transmit";
-    _uart.remotePeriodicStop(tmpId);
+    _uart->remotePeriodicStop(tmpId);
 }
 
 void BackEnd::sendVariable(int structIndex, int variableIndex, const QString & value)
@@ -407,16 +377,16 @@ void BackEnd::sendVariable(int structIndex, int variableIndex, const QString & v
     if (tempId.variableIndex < 0)
     {
         qDebug() << "Sending whole struct, value ignored";
-        _uart.send(tempId);
+        _uart->send(tempId);
         return;
     }
 
-    switch (_lynx.simplifiedType(tempId))
+    switch (_lynx->simplifiedType(tempId))
     {
     case LynxLib::eString:
         qDebug() << "Sending value:" << value;
-        _lynx.setString(value.toLatin1().data(), tempId);
-        _uart.send(tempId);
+        _lynx->setString(value.toLatin1().data(), tempId);
+        _uart->send(tempId);
         break;
     case LynxLib::eNumber:
     {
@@ -431,8 +401,8 @@ void BackEnd::sendVariable(int structIndex, int variableIndex, const QString & v
 
         qDebug() << "Sending value:" << tempVal;
 
-        _lynx.setValue(tempVal, tempId);
-        _uart.send(tempId);
+        _lynx->setValue(tempVal, tempId);
+        _uart->send(tempId);
 
     }
         break;
@@ -477,45 +447,45 @@ void BackEnd::fullscreenButtonClicked()
     emit fullscreenChanged();
 }
 
-int BackEnd::changePlotItem(int structIndex, int variableIndex, const QString & name, bool checked)
-{
+//int BackEnd::changePlotItem(int structIndex, int variableIndex, const QString & name, bool checked)
+//{
 
-    LynxId tmpId(structIndex, variableIndex);
+//    LynxId tmpId(structIndex, variableIndex);
 
-    for (int i = 0; i < _plotItems.count(); i++)
-    {
-        if (tmpId == _plotItems.at(i).id)
-        {
-            if (checked)
-            {
-                qDebug() << "Item:" << name << "was not added since it is already in the list.";
-                return 0;
-            }
-            else
-            {
-                _plotItems.remove(i);
-                qDebug() << "Item:" << name << "was removed from the list.";
-                qDebug() << "Count is now:" << _plotItems.count();
-                return -1;
-            }
-        }
-    }
+//    for (int i = 0; i < _plotItems.count(); i++)
+//    {
+//        if (tmpId == _plotItems.at(i).id)
+//        {
+//            if (checked)
+//            {
+//                qDebug() << "Item:" << name << "was not added since it is already in the list.";
+//                return 0;
+//            }
+//            else
+//            {
+//                _plotItems.remove(i);
+//                qDebug() << "Item:" << name << "was removed from the list.";
+//                qDebug() << "Count is now:" << _plotItems.count();
+//                return -1;
+//            }
+//        }
+//    }
 
-    if (!checked)
-    {
-        qDebug() << "Item:" << name << "was not removed, since it was not in the list.";
-        return 0;
-    }
+//    if (!checked)
+//    {
+//        qDebug() << "Item:" << name << "was not removed, since it was not in the list.";
+//        return 0;
+//    }
 
-    _plotItems.append();
-    _plotItems.last().id = tmpId;
-    _plotItems.last().name = name;
+//    _plotItems.append();
+//    _plotItems.last().id = tmpId;
+//    _plotItems.last().name = name;
 
-    qDebug() << "Item" << _plotItems.last().name << "with structIndex:" << _plotItems.last().id.structIndex << "and variableIndex:" << _plotItems.last().id.variableIndex << "was added";
-    qDebug() << "Count is now:" << _plotItems.count();
+//    qDebug() << "Item" << _plotItems.last().name << "with structIndex:" << _plotItems.last().id.structIndex << "and variableIndex:" << _plotItems.last().id.variableIndex << "was added";
+//    qDebug() << "Count is now:" << _plotItems.count();
 
-    return 1;
-}
+//    return 1;
+//}
 
 //void BackEnd::sendData(int structIndex, int variableIndex)
 //{

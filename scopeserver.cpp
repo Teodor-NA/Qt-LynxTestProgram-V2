@@ -283,6 +283,12 @@ int ScopeServer::changePlotItem(int structIndex, int variableIndex, bool checked
 
     LynxId tmpId(structIndex, variableIndex);
 
+    if (_lynx->outOfBounds(tmpId))
+    {
+        qDebug() << "Struct id is out of bounds. Most likely because the struct has not been added.";
+        return 0;
+    }
+
     QString name = QString(_lynx->getVariableName(tmpId));
 
     for (int i = 0; i < signalInformation.count(); i++)
@@ -328,4 +334,17 @@ int ScopeServer::changePlotItem(int structIndex, int variableIndex, bool checked
     emit createSeries();
 
     return 1;
+}
+
+
+LynxList<LynxId> ScopeServer::getIdList()
+{
+    LynxList<LynxId> temp(signalInformation.count());
+
+    for (int i = 0; i < signalInformation.count(); i++)
+    {
+        temp.append(signalInformation.at(i).id);
+    }
+
+    return temp;
 }

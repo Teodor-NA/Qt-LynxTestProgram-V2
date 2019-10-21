@@ -50,6 +50,7 @@ signals:
     void createSeries();
 
 public slots:
+    LynxList<LynxId> getIdList();
     void resumeRealtime()
     {
         // logger.clear();

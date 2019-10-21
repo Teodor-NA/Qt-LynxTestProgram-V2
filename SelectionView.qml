@@ -201,6 +201,7 @@ Item {
                     {
                         clearStructInfo()
                         clearVariableList()
+                        structInfo.structIndex = -1
                     }
                 }
             }
@@ -215,6 +216,7 @@ Item {
                     id: structInfo
 
                     property var structIndex: -1
+                    property bool valid: (structIndex >= 0)
 
                     anchors.fill: parent
                     padding: 20
@@ -254,7 +256,7 @@ Item {
                     width: evenWidthSpacing(parent)
                     text: "Add struct"
                     font.pixelSize: 15
-                    enabled: (structComboBox.currentIndex > 0) && (structInfo.structIndex < 0)
+                    enabled: ((structComboBox.currentIndex > 0) && !structInfo.valid)
                     onClicked: backEnd.generateStruct()
                 }
 
@@ -263,7 +265,7 @@ Item {
                     width: evenWidthSpacing(parent)
                     text: "Pull Struct"
                     font.pixelSize: 15
-                    enabled: (structInfo.structIndex >= 0)
+                    enabled: structInfo.valid
                     onClicked: backEnd.pullStruct(structInfo.structIndex)
                 }
             }
@@ -303,7 +305,7 @@ Item {
                 TextField
                 {
                     id: timerInput
-                    enabled: (structInfo.structIndex >= 0)
+                    enabled: structInfo.valid
                     width: evenWidthSpacing(parent)
                     font.pixelSize: 15
                     placeholderText: "Periodic time"
@@ -322,7 +324,7 @@ Item {
                     width: evenWidthSpacing(parent)
                     text: "Start periodic"
                     font.pixelSize: 15
-                    enabled: (structInfo.structIndex >= 0)
+                    enabled: structInfo.valid
                     onClicked: timerRow.startPeriodic()
 
                 }
@@ -333,7 +335,7 @@ Item {
                     width: evenWidthSpacing(parent)
                     text: "Stop periodic"
                     font.pixelSize: 15
-                    enabled: (structInfo.structIndex >= 0)
+                    enabled: structInfo.valid
                     onClicked: timerRow.stopPeriodic()
 
                 }
@@ -350,45 +352,45 @@ Item {
                 font.pixelSize: 15
             }
 
-            Button
-            {
-                width: parent.width
-                text: "Send to plotter"
-                font.pixelSize: 15
-                enabled: (structInfo.structIndex >= 0)
-                onClicked:
-                {
-                    var signalsAdded = 0
-                    var signalsRemoved = 0
+//            Button
+//            {
+//                width: parent.width
+//                text: "Send to plotter"
+//                font.pixelSize: 15
+//                enabled: structInfo.valid
+//                onClicked:
+//                {
+//                    var signalsAdded = 0
+//                    var signalsRemoved = 0
 
-                    for (var i = 0; i < variableModel.count; i++)
-                    {
-                        var tmp = variableModel.get(i)
+//                    for (var i = 0; i < variableModel.count; i++)
+//                    {
+//                        var tmp = variableModel.get(i)
 
-                        var state = backEnd.changePlotItem(structInfo.structIndex, tmp.variableIndexIn, tmp.variableNameIn, tmp.checkedOut)
-                            if (state > 0)
-                                signalsAdded++
-                            else if (state < 0)
-                                signalsRemoved++
+//                        var state = backEnd.changePlotItem(structInfo.structIndex, tmp.variableIndexIn, tmp.variableNameIn, tmp.checkedOut)
+//                            if (state > 0)
+//                                signalsAdded++
+//                            else if (state < 0)
+//                                signalsRemoved++
 
-                    }
+//                    }
 
-                    if (signalsAdded === 0)
-                        console.log("Nothing was added.")
-                    else if (signalsAdded === 1)
-                        console.log("One signal was added to the plotter.")
-                    else
-                        console.log(signalsAdded + " signals were added to the plotter.")
+//                    if (signalsAdded === 0)
+//                        console.log("Nothing was added.")
+//                    else if (signalsAdded === 1)
+//                        console.log("One signal was added to the plotter.")
+//                    else
+//                        console.log(signalsAdded + " signals were added to the plotter.")
 
-                    if (signalsRemoved === 0)
-                        console.log("Nothing was removed.")
-                    else if (signalsRemoved === 1)
-                        console.log("One signal was removed from the plotter.")
-                    else
-                        console.log(signalsRemoved + " signals were removed from the plotter.")
+//                    if (signalsRemoved === 0)
+//                        console.log("Nothing was removed.")
+//                    else if (signalsRemoved === 1)
+//                        console.log("One signal was removed from the plotter.")
+//                    else
+//                        console.log(signalsRemoved + " signals were removed from the plotter.")
 
-                }
-            }
+//                }
+//            }
         }
 
 
@@ -441,7 +443,8 @@ Item {
             variableValue: variableValueIn
             enableInput: enableInputIn
             checkedInput: checkedIn
-            onCheckedChanged: checkedOut = checked
+            enableCheckbox: structInfo.valid
+            onCheckedChanged: checkedOut = checkedIn = checked
         }
     }
 
