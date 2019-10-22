@@ -24,3 +24,13 @@ void QtLynxWrapper::readData()
         }
     }
 }
+
+QString QtLynxWrapper::getStructName(QtLynxId * lynxId)
+{
+    return QString(_lynx.getStructName(lynxId->lynxId()));
+}
+
+QString QtLynxWrapper::getVariableName(QtLynxId * lynxId)
+{
+    return QString(_lynx.getVariableName(lynxId->lynxId()));
+}

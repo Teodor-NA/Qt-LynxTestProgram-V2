@@ -1,5 +1,6 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
+import lynxlib 1.0
 
 MyFrame
 {
@@ -16,6 +17,13 @@ MyFrame
 
     implicitHeight: 120
     implicitWidth: 400
+
+    LynxId
+    {
+        id: lynxId
+        structIndex: myFrame.structIndex
+        variableIndex: myFrame.variableIndex
+    }
 
     Row
     {

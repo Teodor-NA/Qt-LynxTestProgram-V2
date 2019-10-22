@@ -29,6 +29,8 @@ int main(int argc, char *argv[])
     QObject::connect(&lynx, SIGNAL(newDeviceInfoReceived(const LynxDeviceInfo &)), &backEnd, SLOT(newDeviceInfoReceived(const LynxDeviceInfo &)));
     QObject::connect(&backEnd, SIGNAL(getIdList()), &scopeServer, SLOT(getIdList()));
 
+    qmlRegisterType<QtLynxId>("lynxlib", 1, 0, "LynxId");
+
     viewer.setTitle("Qt-Lynx Test Application");
     viewer.setSource(QUrl(QStringLiteral("qrc:/main.qml")));
     viewer.setWidth(1280);

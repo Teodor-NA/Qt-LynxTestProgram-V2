@@ -1,5 +1,6 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
+import lynxlib 1.0
 
 Item {
     property string deviceDescription: "No selection"
@@ -52,7 +53,7 @@ Item {
 
     function addStructIndex(structIndex)
     {
-        structInfo.structIndex = structIndex
+        structLynxId.structIndex = structIndex
     }
 
     function clearVariableList()
@@ -76,22 +77,22 @@ Item {
         )
     }
 
-    function changeVariableValue(structIndex, variableIndex, value)
+    function changeVariableValue(lynxId, value)
     {
-        if (structIndex !== structInfo.structIndex)
+        if (lynxId.structIndex !== structLynxId.structIndex)
         {
-            // The struct is not currently open
+            console.log("The struct index: " + lynxId.structIndex + " is not the same as the open struct index: " + structLynxId.structIndex)
             return;
         }
 
-        if ((variableIndex < 0) || (variableIndex >= variableModel.count))
+        if ((lynxId.variableIndex < 0) || (lynxId.variableIndex >= variableModel.count))
         {
             console.log("Variable index out of bounds")
             return
         }
 
         // variableModel.setProperty(variableIndex, "variableValueIn", value)
-        variableModel.get(variableIndex).variableValueIn = value
+        variableModel.get(lynxId.variableIndex).variableValueIn = value
     }
 
     Row
@@ -201,7 +202,7 @@ Item {
                     {
                         clearStructInfo()
                         clearVariableList()
-                        structInfo.structIndex = -1
+                        structLynxId.structIndex = -1
                     }
                 }
             }
@@ -215,8 +216,8 @@ Item {
                 {
                     id: structInfo
 
-                    property var structIndex: -1
-                    property bool valid: (structIndex >= 0)
+                    // property var structIndex: -1
+                    property bool valid: (structLynxId.structIndex >= 0)
 
                     anchors.fill: parent
                     padding: 20
@@ -243,6 +244,11 @@ Item {
                         // height: 60
                         width: parent.width
                     }
+
+                    LynxId
+                    {
+                        id: structLynxId
+                    }
                 }
             }
 
@@ -266,7 +272,7 @@ Item {
                     text: "Pull Struct"
                     font.pixelSize: 15
                     enabled: structInfo.valid
-                    onClicked: backEnd.pullStruct(structInfo.structIndex)
+                    onClicked: backEnd.pullStruct(structLynxId)
                 }
             }
 
@@ -285,7 +291,7 @@ Item {
                     if (timerInput.text > -1)
                     {
                        activeTimer = timerInput.text
-                       backEnd.startPeriodic(activeTimer, structInfo.structIndex)
+                       backEnd.startPeriodic(activeTimer, structLynxId)
                     }
                     else
                     {
@@ -299,7 +305,7 @@ Item {
                 function stopPeriodic()
                 {
                     activeTimer = ""
-                    backEnd.stopPeriodic(structInfo.structIndex)
+                    backEnd.stopPeriodic(structLynxId)
                 }
 
                 TextField
@@ -424,7 +430,6 @@ Item {
             variableIndexIn: -1
             variableTypeIn: "No Selection"
             variableValueIn: "No selection"
-            // variableValueOut: "No selection"
             enableInputIn: false
         }
 
@@ -438,7 +443,7 @@ Item {
         {
             variableName: variableNameIn
             variableIndex: variableIndexIn
-            structIndex: structInfo.structIndex
+            structIndex: structLynxId.structIndex
             variableType: variableTypeIn
             variableValue: variableValueIn
             enableInput: enableInputIn

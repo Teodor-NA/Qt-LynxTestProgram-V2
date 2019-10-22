@@ -28,6 +28,8 @@ void BackEnd::newDataReceived(const LynxId & lynxId)
     QString value;
     LynxLib::E_LynxSimplifiedType tempType;
 
+    QtLynxId tmpQtId;
+
     if (lynxId.variableIndex < 0)
     {
         int varCount = _lynx->structVariableCount(lynxId.structIndex);
@@ -51,7 +53,9 @@ void BackEnd::newDataReceived(const LynxId & lynxId)
                 break;
             }
 
-            this->changeVariableValue(tempId.structIndex, tempId.variableIndex, value);
+            tmpQtId = tempId;
+
+            this->changeVariableValue(&tmpQtId, value); // (tempId.structIndex, tempId.variableIndex, value)
         }
     }
     else
@@ -71,7 +75,9 @@ void BackEnd::newDataReceived(const LynxId & lynxId)
             break;
         }
 
-        this->changeVariableValue(lynxId.structIndex, lynxId.variableIndex, value);
+        tmpQtId = lynxId;
+
+        this->changeVariableValue(&tmpQtId, value); // (lynxId.structIndex, lynxId.variableIndex, value)
     }
 
 
@@ -296,6 +302,7 @@ int BackEnd::generateStruct()
     // Add variable values
     QString value;
     LynxId tempId;
+    QtLynxId tmpQtId;
     LynxLib::E_LynxSimplifiedType tempType;
     for (int i = 0; i < _dynamicIds.last().variableIds.count(); i++)
     {
@@ -314,7 +321,8 @@ int BackEnd::generateStruct()
             break;
         }
 
-        this->changeVariableValue(tempId.structIndex, tempId.variableIndex, value);
+        tmpQtId = tempId;
+        this->changeVariableValue(&tmpQtId, value);
     }
 
     qDebug() << "Struct was succesfully added, new index:" << (_dynamicIds.count() - 1);
@@ -336,57 +344,55 @@ void BackEnd::pullStruct(int structIndex)
     _uart->pullDatagram(tmpId);
 }
 
-void BackEnd::startPeriodic(unsigned int interval, int structIndex)
+void BackEnd::startPeriodic(unsigned int interval, QtLynxId * lynxId)
 {
-    LynxId tmpId(structIndex);
+    // LynxId tmpId(structIndex);
 
-    if (tmpId.structIndex < 0)
+    if (lynxId->lynxId().structIndex < 0)
     {
         qDebug() << "Could not find datagram. Did you remember to add the struct?";
         return;
     }
 
     qDebug() << "Starting periodic transmit at:" << interval << "ms interval";
-    _uart->remotePeriodicStart(tmpId, interval);
+    _uart->remotePeriodicStart(lynxId->lynxId(), interval);
 }
 
-void BackEnd::stopPeriodic(int structIndex)
+void BackEnd::stopPeriodic(QtLynxId * lynxId)
 {
-    LynxId tmpId(structIndex);
+    // LynxId tmpId(structIndex);
 
-    if (tmpId.structIndex < 0)
+    if (lynxId->lynxId().structIndex < 0)
     {
         qDebug() << "Could not find datagram. Did you remember to add the struct?";
         return;
     }
 
     qDebug() << "Stopping periodic transmit";
-    _uart->remotePeriodicStop(tmpId);
+    _uart->remotePeriodicStop(lynxId->lynxId());
 }
 
-void BackEnd::sendVariable(int structIndex, int variableIndex, const QString & value)
+void BackEnd::sendVariable(QtLynxId * lynxId, const QString & value)
 {
-    LynxId tempId(structIndex, variableIndex);
-
-    if (tempId.structIndex < 0)
+    if (lynxId->lynxId().structIndex < 0)
     {
         qDebug() << "Struct is not added";
         return;
     }
 
-    if (tempId.variableIndex < 0)
+    if (lynxId->lynxId().variableIndex < 0)
     {
         qDebug() << "Sending whole struct, value ignored";
-        _uart->send(tempId);
+        _uart->send(lynxId->lynxId());
         return;
     }
 
-    switch (_lynx->simplifiedType(tempId))
+    switch (_lynx->simplifiedType(lynxId->lynxId()))
     {
     case LynxLib::eString:
         qDebug() << "Sending value:" << value;
-        _lynx->setString(value.toLatin1().data(), tempId);
-        _uart->send(tempId);
+        _lynx->setString(value.toLatin1().data(), lynxId->lynxId());
+        _uart->send(lynxId->lynxId());
         break;
     case LynxLib::eNumber:
     {
@@ -401,8 +407,8 @@ void BackEnd::sendVariable(int structIndex, int variableIndex, const QString & v
 
         qDebug() << "Sending value:" << tempVal;
 
-        _lynx->setValue(tempVal, tempId);
-        _uart->send(tempId);
+        _lynx->setValue(tempVal, lynxId->lynxId());
+        _uart->send(lynxId->lynxId());
 
     }
         break;

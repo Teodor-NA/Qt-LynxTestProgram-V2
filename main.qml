@@ -2,7 +2,7 @@ import QtQuick 2.12
 import QtQuick.Window 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Dialogs 1.2
-// import backend 1.0
+import lynxlib 1.0
 // import Qt.labs.platform 1.1
 
 Item
@@ -34,7 +34,7 @@ Item
         onAddStructIndex: selectionView.addStructIndex(structIndex)
         onClearVariableList: selectionView.clearVariableList()
         onAddVariable: selectionView.addVariable(variableName, variableIndex, variableType, variableValue, enableInput, checked)
-        onChangeVariableValue: selectionView.changeVariableValue(structIndex, variableIndex, value)
+        onChangeVariableValue: selectionView.changeVariableValue(lynxId, value)
     }
 
     Connections
@@ -86,6 +86,19 @@ Item
     Column
     {
         anchors.fill: parent
+
+//        Button
+//        {
+//            id: testButton
+//            text: "Test button"
+//            onClicked: { console.log(lynx.getStructName(lynxId)); console.log(lynx.getVariableName(lynxId)) }
+//            LynxId
+//            {
+//                id: lynxId
+//                structIndex: 0
+//                variableIndex: 1
+//            }
+//        }
 
         Row
         {

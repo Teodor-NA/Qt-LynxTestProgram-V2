@@ -6,6 +6,7 @@
 #include <QtQuick/QQuickView>
 #include "LynxStructure.h"
 #include "lynxuartqt.h"
+#include "qtlynxwrapper.h"
 // #include "lightcontrol.h"
 // #include "teststruct.h"
 
@@ -94,7 +95,7 @@ signals:
     void addStructIndex(int structIndex);
     void clearVariableList();
     void addVariable(const QString & variableName, int variableIndex, const QString & variableType, const QString & variableValue, bool enableInput, bool checked);
-    void changeVariableValue(int structIndex, int variableIndex, const QString & value);
+    void changeVariableValue(QtLynxId * lynxId, const QString & value); // (int structIndex, int variableIndex, const QString & value);
     void fullscreenChanged();
     LynxList<LynxId> getIdList();
 
@@ -107,9 +108,9 @@ public slots:
     void selectStruct(int infoIndex);
     int generateStruct();
     void pullStruct(int structIndex);
-    void startPeriodic(unsigned int interval, int structIndex = -1);
-    void stopPeriodic(int structIndex = -1);
-    void sendVariable(int structIndex, int variableIndex, const QString & value);
+    void startPeriodic(unsigned int interval, QtLynxId * lynxId); // int structIndex = -1);
+    void stopPeriodic(QtLynxId * lynxId);  // int structIndex = -1);
+    void sendVariable(QtLynxId * lynxId, const QString & value);// int structIndex, int variableIndex, const QString & value);
     bool uartConnected() { return _uart->opened(); }
     void fullscreenButtonClicked();
     void newDataReceived(const LynxId & lynxId);
