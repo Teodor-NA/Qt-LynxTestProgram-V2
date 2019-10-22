@@ -30,230 +30,358 @@
 import QtQuick 2.12
 import QtCharts 2.3
 import QtQuick.Dialogs 1.2
+import QtQuick.Controls 2.12
+import QtQuick.Controls.Styles 1.4
 //![1]
-
-ChartView {
-    id: chartView
-    animationOptions: ChartView.SeriesAnimations //NoAnimation
-    theme: ChartView.ChartThemeLight
-    antialiasing: true
-    legend.font.pixelSize: 15
-    property var setMaxAxis: 0
-    property var setMinAxis: 0
-    property bool openGL: true
-    property bool openGLSupported: true
+Item {
+    id: chartItem
+    //property var setMaxAxis: 0
+    //property var setMinAxis: 0
+    //property bool openGL: true
+    //property bool openGLSupported: true
     property var xaxis_min: new Date()
     property var xaxis_max: new Date()
-    property var nMin : 1
+    //property var nMin : 1
     property var deltaX :10000 //10*1000ms delta time
-    property var offsetFromCurrentTime: 0
-
-    FileDialog
+    //property var offsetFromCurrentTime: 0
+    Rectangle // Shows the checkboxes
     {
-        id:screenShots
-    }
-    Rectangle{
-        id: rubberBandRec1
-        border.color: "black"
-        border.width: 1
-        opacity: 0.3
-        visible: false
-        transform: Scale { origin.x: 0; origin.y: 0; yScale: -1}
-    }
-    Rectangle{
-        id: rubberBandRec2
-        border.color: "black"
-        border.width: 1
-        opacity: 0.3
-        visible: false
-        transform: Scale { origin.x: 0; origin.y: 0; yScale: -1; xScale: -1}
-    }
-    Rectangle{
-        id: rubberBandRec3
-        border.color: "black"
-        border.width: 1
-        opacity: 0.3
-        visible: false
-        transform: Scale { origin.x: 0; origin.y: 0; xScale: -1}
-    }
-    Rectangle{
-        id: rubberBandRec4
-        border.color: "black"
-        border.width: 1
-        opacity: 0.3
-        visible: false
-    }
-    MouseArea{
-        property bool hasBeenPressedAndHoled: false
-        id:mouseArea
-        property bool pressedOnce: false
-        property int lastX: 0
-        property int lastY: 0
-        hoverEnabled: true
-        anchors.fill: parent
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-        onPressed: {
-            if(mouse.button === Qt.LeftButton)
-            {
-                rubberBandRec1.x = mouseX; rubberBandRec1.y = mouseY; rubberBandRec1.visible = true;
-                rubberBandRec2.x = mouseX; rubberBandRec2.y = mouseY; rubberBandRec2.visible = true;
-                rubberBandRec3.x = mouseX; rubberBandRec3.y = mouseY; rubberBandRec3.visible = true;
-                rubberBandRec4.x = mouseX; rubberBandRec4.y = mouseY; rubberBandRec4.visible = true;
+        anchors.left: parent.left
+        //anchors.verticalCenter: parent.verticalCenter
+        height: parent.height
+        width: parent.width*0.1
 
-                hasBeenPressedAndHoled=true
-                console.log("been pressed")
+        Column
+        {
+            id: column
+            anchors.fill: parent
+            ButtonGroup
+            {
+                id: childGroup
+                exclusive: false
+                checkState: parentBox.checkState
             }
-            if(mouse.button === Qt.RightButton)
+            CheckBox
             {
+                id: parentBox
+                text: qsTr("Parent")
+                checkState: childGroup.checkState
+            }
 
-                if(!pressedOnce)
+            ListView
+            {
+                id:listViewer
+                model: listCheckModel
+                delegate: myCheckDelegate
+                width: 200
+                anchors.top: parentBox.bottom
+                anchors.topMargin: 0
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 0
+            }
+            ListModel
+            {
+                id: listCheckModel
+            }
+            Component
+            {
+                id:myCheckDelegate
+                CheckBox
                 {
-                    lastX = mouse.x
-                    lastY = mouse.y
-                    pressedOnce=true
+                    checked: true
+                    text: name
+                    property var varindex: varindexin
+                    property string seriesColor: seriesColorIn
+                    leftPadding: indicator.width
+                    ButtonGroup.group: childGroup
+
+                    indicator: Rectangle
+                                {
+                                    x:width
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    implicitWidth: 30
+                                    implicitHeight: 30
+                                    radius: 1
+                                    border.color: activeFocus ? "darkblue" : "gray"
+                                    border.width: 1
+                                    Rectangle {
+                                        visible: checked
+                                        color: seriesColor
+                                        border.color: "#333"
+                                        radius: 2
+                                        anchors.margins: 4
+                                        anchors.fill: parent
+                                    }
+
+                                }
+                    onCheckedChanged:
+                    {
+                        console.log("index is: "+varindex)
+                        if(checked && index>=0)
+                        {
+                            chartView.series(index).visible=true
+                        }
+                        else if(!checked && index>=0)
+                        {
+                            chartView.series(index).visible=false
+                        }
+                    }
+                }
+            }
+        }//colum
+//        Column
+//        {
+//            anchors.fill: parent
+
+
+//            ListView
+//            {
+//                id:structViewer
+//                model: signalModel
+//                delegate: signalDelegate
+//                width: 200
+//                height: 500
+//            }
+//            ListModel
+//            {
+//                id: signalModel
+//                ListElement
+//                {
+
+//                }
+//            }
+//            Component
+//            {
+//                id:signalDelegate
+//                CheckBoxList
+//                {
+
+//                }
+
+//            }
+//        }//colum
+    }//rectangle
+    ChartView
+    {
+        id: chartView
+        height: parent.height
+        width: parent.width*0.9
+        anchors.right: parent.right
+        animationOptions: ChartView.SeriesAnimations //NoAnimation
+        theme: ChartView.ChartThemeLight
+        antialiasing: true
+
+        legend.visible: false
+        legend.font.pixelSize: 15
+
+
+        FileDialog
+        {
+            id:screenShots
+        }
+
+        Rectangle{
+            id: rubberBandRec1
+            border.color: "black"
+            border.width: 1
+            opacity: 0.3
+            visible: false
+            transform: Scale { origin.x: 0; origin.y: 0; yScale: -1}
+        }
+        Rectangle{
+            id: rubberBandRec2
+            border.color: "black"
+            border.width: 1
+            opacity: 0.3
+            visible: false
+            transform: Scale { origin.x: 0; origin.y: 0; yScale: -1; xScale: -1}
+        }
+        Rectangle{
+            id: rubberBandRec3
+            border.color: "black"
+            border.width: 1
+            opacity: 0.3
+            visible: false
+            transform: Scale { origin.x: 0; origin.y: 0; xScale: -1}
+        }
+        Rectangle{
+            id: rubberBandRec4
+            border.color: "black"
+            border.width: 1
+            opacity: 0.3
+            visible: false
+        }
+        MouseArea{
+            property bool hasBeenPressedAndHoled: false
+            id:mouseArea
+            property bool pressedOnce: false
+            property int lastX: 0
+            property int lastY: 0
+            hoverEnabled: true
+            anchors.fill: parent
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onPressed: {
+                if(mouse.button === Qt.LeftButton)
+                {
+                    rubberBandRec1.x = mouseX; rubberBandRec1.y = mouseY; rubberBandRec1.visible = true;
+                    rubberBandRec2.x = mouseX; rubberBandRec2.y = mouseY; rubberBandRec2.visible = true;
+                    rubberBandRec3.x = mouseX; rubberBandRec3.y = mouseY; rubberBandRec3.visible = true;
+                    rubberBandRec4.x = mouseX; rubberBandRec4.y = mouseY; rubberBandRec4.visible = true;
+
+                    hasBeenPressedAndHoled=true
                     console.log("been pressed")
                 }
+                if(mouse.button === Qt.RightButton)
+                {
 
-            }
+                    if(!pressedOnce)
+                    {
+                        lastX = mouse.x
+                        lastY = mouse.y
+                        pressedOnce=true
+                        console.log("been pressed")
+                    }
 
-        }
-        onPositionChanged: {
-            if(pressedOnce)
-            {
-                console.log("pos Changed")
-                if (lastX !== mouse.x) {
-                    chartView.scrollRight(lastX - mouse.x)
-                    lastX = mouse.x
-                    //pressedOnce=false;
                 }
-                if (lastY !== mouse.y) {
-                    chartView.scrollDown(lastY - mouse.y)
-                    lastY = mouse.y
-                    //pressedOnce=false;
+
+            }
+            onPositionChanged: {
+                if(pressedOnce)
+                {
+                   // console.log("pos Changed")
+                    if (lastX !== mouse.x) {
+                        chartView.scrollRight(lastX - mouse.x)
+                        lastX = mouse.x
+                        //pressedOnce=false;
+                    }
+                    if (lastY !== mouse.y) {
+                        chartView.scrollDown(lastY - mouse.y)
+                        lastY = mouse.y
+                        //pressedOnce=false;
+                    }
                 }
             }
-        }
 
-        onMouseXChanged: {
-            rubberBandRec1.width = mouseX - rubberBandRec1.x;
-            rubberBandRec2.width = rubberBandRec2.x-mouseX;
-            rubberBandRec3.width = rubberBandRec3.x-mouseX;
-            rubberBandRec4.width = mouseX - rubberBandRec4.x;
-        }
-        onMouseYChanged: {
-            rubberBandRec1.height = rubberBandRec1.y - mouseY;
-            rubberBandRec2.height = rubberBandRec2.y - mouseY;
-            rubberBandRec3.height = mouseY - rubberBandRec3.y;
-            rubberBandRec4.height = mouseY - rubberBandRec4.y;
-            //            if(rubberBandRec1.height<50)
-            //                rubberBandRec1.height=1;
-            //            if(rubberBandRec2.height<50)
-            //                rubberBandRec2.height=1;
-            //            if(rubberBandRec3.height<50)
-            //                rubberBandRec3.height=1;
-            //            if(rubberBandRec4.height<50)
-            //                rubberBandRec4.height=1;
-        }
-        onReleased: {
-            if(mouse.button === Qt.RightButton)
-                pressedOnce=false;
+            onMouseXChanged: {
+                rubberBandRec1.width = mouseX - rubberBandRec1.x;
+                rubberBandRec2.width = rubberBandRec2.x-mouseX;
+                rubberBandRec3.width = rubberBandRec3.x-mouseX;
+                rubberBandRec4.width = mouseX - rubberBandRec4.x;
+            }
+            onMouseYChanged: {
+                rubberBandRec1.height = rubberBandRec1.y - mouseY;
+                rubberBandRec2.height = rubberBandRec2.y - mouseY;
+                rubberBandRec3.height = mouseY - rubberBandRec3.y;
+                rubberBandRec4.height = mouseY - rubberBandRec4.y;
+                //            if(rubberBandRec1.height<50)
+                //                rubberBandRec1.height=1;
+                //            if(rubberBandRec2.height<50)
+                //                rubberBandRec2.height=1;
+                //            if(rubberBandRec3.height<50)
+                //                rubberBandRec3.height=1;
+                //            if(rubberBandRec4.height<50)
+                //                rubberBandRec4.height=1;
+            }
+            onReleased: {
+                if(mouse.button === Qt.RightButton)
+                    pressedOnce=false;
 
-            if(hasBeenPressedAndHoled && mouse.button === Qt.LeftButton)
-            {
-
-
-                var x = rubberBandRec4.x-(rubberBandRec4.width<0)*Math.abs(rubberBandRec4.width);
-                var y = rubberBandRec4.y-(rubberBandRec4.height<0)*Math.abs(rubberBandRec4.height);
-//                if(rubberBandRec4.height==1)
-//                    rubberBandRec4.height=scopeView.plotArea.height
+                if(hasBeenPressedAndHoled && mouse.button === Qt.LeftButton)
+                {
 
 
-                if (Math.abs(rubberBandRec4.width*rubberBandRec4.height)>100){
-                    var currentMax=chartView.axisX().max
-                    chartView.zoomIn(Qt.rect(x, y, Math.abs(rubberBandRec4.width),Math.abs(rubberBandRec4.height)));
-                    offsetFromCurrentTime=currentMax - chartView.axisX().max
-                    console.log(offsetFromCurrentTime)
-                    deltaX=chartView.axisX().max - chartView.axisX().min
+                    var x = rubberBandRec4.x-(rubberBandRec4.width<0)*Math.abs(rubberBandRec4.width);
+                    var y = rubberBandRec4.y-(rubberBandRec4.height<0)*Math.abs(rubberBandRec4.height);
+                    //                if(rubberBandRec4.height==1)
+                    //                    rubberBandRec4.height=scopeView.plotArea.height
+
+
+                    if (Math.abs(rubberBandRec4.width*rubberBandRec4.height)>100){
+                        var currentMax=chartView.axisX().max
+                        chartView.zoomIn(Qt.rect(x, y, Math.abs(rubberBandRec4.width),Math.abs(rubberBandRec4.height)));
+                        offsetFromCurrentTime=currentMax - chartView.axisX().max
+                        console.log(offsetFromCurrentTime)
+                        deltaX=chartView.axisX().max - chartView.axisX().min
+                    }
+                    else
+                        chartView.zoomIn(Qt.rect(x-100, y-100,200,200))
+                    rubberBandRec1.visible = false;
+                    rubberBandRec2.visible = false;
+                    rubberBandRec3.visible = false;
+                    rubberBandRec4.visible = false;
+
                 }
-                else
-                    chartView.zoomIn(Qt.rect(x-100, y-100,200,200))
-                rubberBandRec1.visible = false;
-                rubberBandRec2.visible = false;
-                rubberBandRec3.visible = false;
-                rubberBandRec4.visible = false;
+                hasBeenPressedAndHoled=false
 
             }
-            hasBeenPressedAndHoled=false
+//            onPressAndHold: {
 
-        }
-        onPressAndHold: {
+//            }
 
-        }
-
-        onClicked: {
-            if(mouse.button === Qt.RightButton)
-            {
-                //chartView.zoomOut();
-                console.log(xaxis_max-xaxis_min)//ms of chart
+//            onClicked: {
+//                if(mouse.button === Qt.RightButton)
+//                {
+//                    //chartView.zoomOut();
+//                    console.log(xaxis_max-xaxis_min)//ms of chart
 
 
 
 
-            }
+//                }
 
-        }
-        onDoubleClicked: {
-            if(mouse.button === Qt.RightButton)
-            {
-                chartView.zoomOut();
+//            }
+            onDoubleClicked: {
+                if(mouse.button === Qt.RightButton)
+                {
+                    chartView.zoomOut();
+                }
+
             }
 
         }
 
-    }
+        //PinchArea{
+        //    id: pa
 
-    //PinchArea{
-    //    id: pa
+        //    anchors.fill: parent
+        //    onPinchUpdated: {
+        //        console.log ("pich clicked")
+        //        chartView.zoomReset();
+        //        //                    var center_x = pinch.center.x
+        //        //                    var center_y = pinch.center.y
+        //        //                    var width_zoom = height/pinch.scale;
+        //        //                    var height_zoom = width/pinch.scale;
+        //        //                    var r = Qt.rect(center_x-width_zoom/2, center_y - height_zoom/2, width_zoom, height_zoom)
+        //        //                    chartView.zoomIn(r)
+        //    }
 
-    //    anchors.fill: parent
-    //    onPinchUpdated: {
-    //        console.log ("pich clicked")
-    //        chartView.zoomReset();
-    //        //                    var center_x = pinch.center.x
-    //        //                    var center_y = pinch.center.y
-    //        //                    var width_zoom = height/pinch.scale;
-    //        //                    var height_zoom = width/pinch.scale;
-    //        //                    var r = Qt.rect(center_x-width_zoom/2, center_y - height_zoom/2, width_zoom, height_zoom)
-    //        //                    chartView.zoomIn(r)
-    //    }
+        //}
+        ValueAxis {
+            id: axisY1
+            min: -1
+            max: 255
 
-    //}
-    ValueAxis {
-        id: axisY1
-        min: -1
-        max: 255
+        }
 
-    }
-
-    ValueAxis {
-        id: axisY2
-        min: -10
-        max: 10
-    }
-    DateTimeAxis {
-        id:axisX
-        format: "hh:mm:ss"
-        tickCount: 5
-        min:xaxis_min
-        max:xaxis_max
-    }
-
+        ValueAxis {
+            id: axisY2
+            min: -10
+            max: 10
+        }
+        DateTimeAxis {
+            id:axisX
+            format: "hh:mm:ss"
+            tickCount: 5
+            min:xaxis_min
+            max:xaxis_max
+        }
+    }//ChartView
     function screenShot()
     {
         var mypaths = screenShots.shortcuts.desktop.toString().replace(/^(file:\/{3})/,"")
         var filename = "/lynxLogScreenshots-"+new Date().toLocaleTimeString().replace(new RegExp(":", 'g'),".")+".png";
 
-        chartView.grabToImage(function(result)
+        chartItem.grabToImage(function(result)
         {
             if(result.saveToFile(mypaths + filename))
                 console.log("Screenshot created at: " + mypaths + filename);
@@ -292,45 +420,54 @@ ChartView {
         resizeHorizontal()
         resizeVertial()
     }
-
     function changeSeriesType(type)
     {
         chartView.removeAllSeries();
+        listCheckModel.clear();
+        parentBox.text =qsTr("Struct Name")
         for(var n=0; n<scopeServer.getNumberOfSignals();n++)
         {
-            //listCheckModel.clear()
-            listCheckModel.append({
-                name:scopeServer.getSignalText(n),varindexin:n,checked:true
-            })
-            //console.log(n)
+            // TODO Check struct name
+        var series1
             if (type === "line")
             {
-                var series1 = chartView.createSeries(ChartView.SeriesTypeLine, scopeServer.getSignalText(n), axisX, axisY1);
-                // series1.color = scopeServer.getSignalColor(n)
-                series1.useOpenGL = true;
-
+                series1 = chartView.createSeries(ChartView.SeriesTypeLine, scopeServer.getSignalText(n), axisX, axisY1);
             }
             else
             {
-                var series2 = chartView.createSeries(ChartView.SeriesTypeScatter, scopeServer.getSignalText(n), axisX, axisY1);
-                series2.markerSize = 2;
-                series2.borderColor = "transparent";
-                series2.useOpenGL = true;
-
+                series1 = chartView.createSeries(ChartView.SeriesTypeScatter, scopeServer.getSignalText(n), axisX, axisY1);
+                series1.markerSize = 2;
+                series1.borderColor = "transparent";
             }
+            series1.useOpenGL = true
+            listCheckModel.append({name:scopeServer.getSignalText(n),varindexin:n,checked:true,seriesColorIn:series1.color.toString()})
+            //signalModel.get(0).listCheckModel.append({name:scopeServer.getSignalText(n),varindexin:n,checked:true,seriesColorIn:series1.color.toString()})
+
+
         }
 
     }
+    function updateChart()
+    {
+        for(var n = 0; n < scopeServer.getNumberOfSignals(); n++)
+        {
+            scopeServer.update(chartView.series(n), n);
+        }
 
+        if(!chartView.isZoomed())
+        {
+            xaxis_max = new Date()
+            //var today = new Date();
+            xaxis_min = new Date(new Date() - deltaX)
+        }
+        else
+        {
+            xaxis_max = new Date(new Date() - offsetFromCurrentTime)
 
-//    function setAnimations(enabled) {
-//        if (enabled)
-//            chartView.animationOptions = ChartView.SeriesAnimations;
-//        else
-//            chartView.animationOptions = ChartView.NoAnimation;
-//    }
+            xaxis_min = new Date(xaxis_max - deltaX)
 
-//    function changeRefreshRate(rate) {
-//        refreshTimer.interval = 1 / Number(rate) * 1000;
-//    }
-}
+        }
+    }
+
+}//Item
+

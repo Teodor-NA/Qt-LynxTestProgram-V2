@@ -41,46 +41,11 @@ Item
     {
         target: scopeServer
 
-        onCreateSeries:
-        {
+        onCreateSeries: linePlot.enable ?scopeView.changeSeriesType("scatter"):scopeView.changeSeriesType("line")
 
-            if (linePlot.enabled)
-            {
-                scopeView.changeSeriesType("scatter");
+        onRefreshChart:scopeView.updateChart()
 
-            }
-            else
-            {
-                scopeView.changeSeriesType("line");
-            }
-        }
-
-        onRefreshChart:
-        {
-            for(var n = 0; n < scopeServer.getNumberOfSignals(); n++)
-            {
-                scopeServer.update(scopeView.series(n), n);
-            }
-
-            if(!scopeView.isZoomed())
-            {
-                scopeView.xaxis_max = new Date()
-                //var today = new Date();
-                scopeView.xaxis_min = new Date(new Date() - scopeView.deltaX)
-            }
-            else
-            {
-                scopeView.xaxis_max = new Date(new Date() - scopeView.offsetFromCurrentTime)
-
-                scopeView.xaxis_min = new Date(scopeView.xaxis_max - scopeView.deltaX)
-
-            }
-        }
-        onReScale:
-        {
-            scopeView.autoscale()
-
-        }
+        onReScale: scopeView.autoscale()
     }
 
     Column
@@ -333,79 +298,15 @@ Item
             GraphWindowForm
             {
                 id: graphPage
-                Rectangle
-                {
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                    height: parent.height
-                    width: parent.width*0.2
 
-                    Column
-                    {
-                        ButtonGroup
-                        {
-                            id: childGroup
-                            exclusive: false
-                            checkState: parentBox.checkState
-                        }
-                        CheckBox
-                        {
-                            id: parentBox
-                            text: qsTr("Parent")
-                            checkState: childGroup.checkState
-                        }
-
-                        ListView
-                        {
-                            id:listViewer
-                            model: listCheckModel
-                            delegate: myCheckDelegate
-                            width: 200
-                            height: 150
-                        }
-                        ListModel
-                        {
-                            id: listCheckModel
-//                            ListElement {
-//                                name: "Item 1"
-//                            }
-//                                description: "Selectable item 1"
-//                                selected: true
-//                            }
-                        }
-                        Component
-                        {
-                            id:myCheckDelegate
-                            CheckBox
-                            {
-                                checked: true
-                                text: name
-                                property var varindex: varindexin
-                                leftPadding: indicator.width
-                                ButtonGroup.group: childGroup
-                                onCheckedChanged:
-                                {
-                                    console.log("index is: "+varindex)
-                                    if(checked && index>=0)
-                                    {
-                                        scopeView.series(index).visible=true
-                                    }
-                                    else if(!checked && index>=0)
-                                    {
-                                        scopeView.series(index).visible=false
-                                    }
-                                }
-                            }
-                        }
-                    }//colum
-                }//rectangle
                 ScopeView
                 {
                     id: scopeView
-                    anchors.right:  parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    height: parent.height
-                    width: parent.width*0.8
+                    anchors.fill: parent
+//                    anchors.right:  parent.right
+//                    anchors.verticalCenter: parent.verticalCenter
+//                    height: parent.height
+//                    width: parent.width*0.8
                 }
             }
 
