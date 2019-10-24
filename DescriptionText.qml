@@ -5,26 +5,30 @@ Item {
     id: item
     property string descripition: "Not set"
     property string text: "Not set"
-    implicitHeight: 20
-    implicitWidth: 270
+    property var labelRatio: 0.5
+    property var fontPixelSize: 15
+    implicitWidth: 200
+    height: fontPixelSize*1.1
 
     Row
     {
-        anchors.verticalCenter: parent.verticalCenter
+        anchors.fill: parent
         spacing: 10
+
         Label
         {
-            width: 160
+            width: (parent.width - parent.spacing)*labelRatio
             text: item.descripition
             font.bold: true
-            font.pixelSize: 15
+            font.pixelSize: fontPixelSize
             anchors.verticalCenter: parent.verticalCenter
         }
+
         Label
         {
-            width: 100
+            width: (parent.width - parent.spacing)*(1 - labelRatio)
             text: item.text
-            font.pixelSize: 15
+            font.pixelSize: fontPixelSize
             anchors.verticalCenter: parent.verticalCenter
         }
     }

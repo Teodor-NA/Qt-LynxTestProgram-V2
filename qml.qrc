@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>SelectionWindowForm.ui.qml</file>
         <file>GraphWindowForm.ui.qml</file>
         <file>icons/icons8-add-50.png</file>
         <file>icons/icons8-add-new-50.png</file>
@@ -46,10 +45,14 @@
         <file>icons/icons8-separator-50.png</file>
         <file>ScopeView.qml</file>
         <file>icons/icons8-update-left-rotation-50.png</file>
-        <file>SelectionView.qml</file>
         <file>DescriptionText.qml</file>
-        <file>VariableInfo.qml</file>
         <file>MyFrame.qml</file>
         <file>icons/icons8-screenshot-50.png</file>
+        <file>HelperFunctions.js</file>
+        <file>DeviceInfo.qml</file>
+        <file>SelectionView.qml</file>
+        <file>SelectionWindowForm.ui.qml</file>
+        <file>StructInfo.qml</file>
+        <file>VariableInfo.qml</file>
     </qresource>
 </RCC>

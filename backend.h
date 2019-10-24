@@ -53,6 +53,8 @@ class BackEnd : public QObject
     Q_OBJECT
 
     Q_PROPERTY(bool fullscreen MEMBER _fullscreen NOTIFY fullscreenChanged)
+    Q_PROPERTY(int deviceInfoIndex MEMBER _deviceInfoIndex NOTIFY deviceInfoIndexChanged)
+    Q_PROPERTY(int structInfoIndex MEMBER _structInfoIndex NOTIFY structInfoIndexChanged)
 
     LynxManager * const _lynx;
     LynxUartQt * const _uart;
@@ -67,8 +69,8 @@ class BackEnd : public QObject
 
     LynxList<LynxDeviceInfo> _deviceInfoList;
 
-    int _selectedDevice;
-    int _selectedStruct;
+    int _deviceInfoIndex;
+    int _structInfoIndex;
 
     LynxList<LynxDynamicId> _dynamicIds;
     // LynxList<AddedStruct> _addedStructs;
@@ -87,16 +89,16 @@ signals:
     void clearPortList();
     void addPort(const QString & portName);
     void clearDevices();
-    void addDevice(const QString & device);
-    void addDeviceInfo(const QString & description, const QString & id, const QString & version, const QString & count);
+    void addDevice(const QString & description, const QString & id, const QString & version, const QString & count);
     void clearStructList();
-    void addStruct(const QString & structInfo);
-    void addStructInfo(const QString & description, const QString & id, const QString & count);
+    void addStruct(const QString & structName, const QString & structId, const QString & variableCount);
     void addStructIndex(int structIndex);
     void clearVariableList();
     void addVariable(const QString & variableName, int variableIndex, const QString & variableType, const QString & variableValue, bool enableInput, bool checked);
     void changeVariableValue(QtLynxId * lynxId, const QString & value); // (int structIndex, int variableIndex, const QString & value);
     void fullscreenChanged();
+    void deviceInfoIndexChanged();
+    void structInfoIndexChanged();
     LynxList<LynxId> getIdList();
 
 public slots:
@@ -104,8 +106,8 @@ public slots:
     void refreshPortList();
     void portSelected(int portIndex);
     void connectButtonClicked();
-    void selectDevice(int infoIndex);
-    void selectStruct(int infoIndex);
+    void selectDevice(); //int infoIndex);
+    void selectStruct(); //int infoIndex);
     int generateStruct();
     void pullStruct(int structIndex);
     void startPeriodic(unsigned int interval, QtLynxId * lynxId); // int structIndex = -1);

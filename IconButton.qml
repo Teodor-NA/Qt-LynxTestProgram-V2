@@ -5,7 +5,7 @@ Button {
     property string filename: ""
     property string tooltip: ""
     property string pixelSize: "50"
-    property string highlightColor: "lightgrey"
+    property var highlightColor: Qt.darker("white", 1.05)
 
 
     width: Number(pixelSize)

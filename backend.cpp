@@ -7,8 +7,8 @@ BackEnd::BackEnd(LynxManager * const lynx, LynxUartQt * const uart, QObject *par
 {
    //  _uart.open(4, 115200);
 
-    _selectedDevice = -1;
-    _selectedStruct = -1;
+    _deviceInfoIndex = -1;
+    _structInfoIndex = -1;
 
     _fullscreen = false;
 
@@ -86,7 +86,13 @@ void BackEnd::newDataReceived(const LynxId & lynxId)
 void BackEnd::newDeviceInfoReceived(const LynxDeviceInfo & deviceInfo)
 {
     _deviceInfoList.append(deviceInfo);
-    this->addDevice(QString(_deviceInfoList.last().description) + QString::asprintf(" - Id: 0x%x", _deviceInfoList.last().deviceId));
+
+    this->addDevice(
+                QString(_deviceInfoList.last().description),
+                QString::asprintf("0x%x", _deviceInfoList.last().deviceId),
+                QString(_deviceInfoList.last().lynxVersion),
+                QString::number(_deviceInfoList.last().structCount)
+    );
 }
 
 void BackEnd::refreshPortList()
@@ -138,67 +144,50 @@ void BackEnd::connectButtonClicked()
     }
 }
 
-void BackEnd::selectDevice(int infoIndex)
+void BackEnd::selectDevice() //int infoIndex)
 {
-    qDebug() << "deviceIndex:" << infoIndex;
+    qDebug() << "deviceIndex:" << _deviceInfoIndex;
 
-    _selectedDevice = infoIndex;
-
-    if ((_selectedDevice >= _deviceInfoList.count()) || (_selectedDevice < 0))
+    if ((_deviceInfoIndex >= _deviceInfoList.count()) || (_deviceInfoIndex < 0))
     {
         qDebug() << "Cannot find device";
     }
     else
     {
-        this->addDeviceInfo(
-                    QString(_deviceInfoList.at(_selectedDevice).description),
-                    "0x" + QString::number(_deviceInfoList.at(_selectedDevice).deviceId, 16),
-                    QString(_deviceInfoList.at(_selectedDevice).lynxVersion),
-                    QString::number(_deviceInfoList.at(_selectedDevice).structCount)
-                    );
-
         this->clearStructList();
 //        this->addStruct("No selection");
-        for (int i = 0; i < _deviceInfoList.at(_selectedDevice).structs.count(); i++)
+        for (int i = 0; i < _deviceInfoList.at(_deviceInfoIndex).structs.count(); i++)
         {
             this->addStruct(
-                QString(_deviceInfoList.at(_selectedDevice).structs.at(i).description) +
-                QString::asprintf(" - 0x%x", _deviceInfoList.at(_selectedDevice).structs.at(i).structId)
+                QString(_deviceInfoList.at(_deviceInfoIndex).structs.at(i).description),
+                QString::asprintf("0x%x", _deviceInfoList.at(_deviceInfoIndex).structs.at(i).structId),
+                QString::number(_deviceInfoList.at(_deviceInfoIndex).structs.at(i).variableCount)
             );
         }
     }
 }
 
-void BackEnd::selectStruct(int infoIndex)
+void BackEnd::selectStruct() // int infoIndex)
 {
-    qDebug() << "structIndex:" << infoIndex;
+    qDebug() << "structIndex:" << _structInfoIndex;
 
-    _selectedStruct = infoIndex;
-
-    if ((_selectedDevice >= _deviceInfoList.count()) || (_selectedDevice < 0))
+    if ((_deviceInfoIndex >= _deviceInfoList.count()) || (_deviceInfoIndex < 0))
     {
         qDebug() << "Cannot find device";
     }
-    else if ((_selectedStruct >= _deviceInfoList.at(_selectedDevice).structs.count()) || (_selectedStruct < 0))
+    else if ((_structInfoIndex >= _deviceInfoList.at(_deviceInfoIndex).structs.count()) || (_structInfoIndex < 0))
     {
         qDebug() << "Cannot find struct";
     }
     else
     {
-        qDebug() << "var count:" << _deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variableCount;
-
-        // Add struct info to gui
-        this->addStructInfo(
-                    QString(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).description),
-                    QString::asprintf("0x%x", _deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).structId),
-                    QString::number(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variableCount)
-        );
+        qDebug() << "var count:" << _deviceInfoList.at(_deviceInfoIndex).structs.at(_structInfoIndex).variableCount;
 
         // Add struct index if it exists
         LynxId tempId;
         for (int i = 0; i < _dynamicIds.count(); i++)
         {
-            if (_dynamicIds.at(i).structId == _deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).structId)
+            if (_dynamicIds.at(i).structId == _deviceInfoList.at(_deviceInfoIndex).structs.at(_structInfoIndex).structId)
             {
                 qDebug() << "Struct index:" << _dynamicIds.at(i).structLynxId.structIndex << "updated";
                 tempId.structIndex = i;
@@ -218,7 +207,7 @@ void BackEnd::selectStruct(int infoIndex)
         // Update variable info in gui
         this->clearVariableList();
 
-        for (int i = 0; i < _deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variables.count(); i++)
+        for (int i = 0; i < _deviceInfoList.at(_deviceInfoIndex).structs.at(_structInfoIndex).variables.count(); i++)
         {
             if (tempId.structIndex >= 0)
             {
@@ -258,11 +247,11 @@ void BackEnd::selectStruct(int infoIndex)
             }
 
             this->addVariable(
-                QString(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variables.at(i).description),
+                QString(_deviceInfoList.at(_deviceInfoIndex).structs.at(_structInfoIndex).variables.at(i).description),
                 i,
-                QString(LynxTextList::lynxDataType(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variables.at(i).dataType)),
+                QString(LynxTextList::lynxDataType(_deviceInfoList.at(_deviceInfoIndex).structs.at(_structInfoIndex).variables.at(i).dataType)),
                 data,
-                (LynxLib::accessMode(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct).variables.at(i).dataType) == LynxLib::eReadWrite),
+                (LynxLib::accessMode(_deviceInfoList.at(_deviceInfoIndex).structs.at(_structInfoIndex).variables.at(i).dataType) == LynxLib::eReadWrite),
                 checked
             );
         }
@@ -271,20 +260,20 @@ void BackEnd::selectStruct(int infoIndex)
 
 int BackEnd::generateStruct()
 {
-    qDebug() << "Attempting to add struct with device index:" << _selectedDevice << "and struct index:" <<_selectedStruct;
+    qDebug() << "Attempting to add struct with device index:" << _deviceInfoIndex << "and struct index:" <<_structInfoIndex;
 
-    if ((_selectedDevice < 0) || (_selectedDevice >= _deviceInfoList.count()))
+    if ((_deviceInfoIndex < 0) || (_deviceInfoIndex >= _deviceInfoList.count()))
     {
         qDebug() << "Could not add struct because device index is out of range";
         return -1;
     }
-    else if ((_selectedStruct < 0) || (_selectedStruct >= _deviceInfoList.at(_selectedDevice).structs.count()))
+    else if ((_structInfoIndex < 0) || (_structInfoIndex >= _deviceInfoList.at(_deviceInfoIndex).structs.count()))
     {
         qDebug() << "Could not add struct because struct index is out of range";
         return -1;
     }
 
-    LynxDynamicId temp = _lynx->addStructure(_deviceInfoList.at(_selectedDevice).structs.at(_selectedStruct));
+    LynxDynamicId temp = _lynx->addStructure(_deviceInfoList.at(_deviceInfoIndex).structs.at(_structInfoIndex));
 
     if (temp.structLynxId == LynxId())
     {

@@ -6,4 +6,7 @@ Rectangle
     border.color: "black"
     border.width: 2
 
+    implicitHeight: 50
+    implicitWidth:  100
+
 }

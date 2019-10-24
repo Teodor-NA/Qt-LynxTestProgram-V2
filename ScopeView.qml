@@ -46,7 +46,7 @@ Item {
     //property var offsetFromCurrentTime: 0
     Rectangle // Shows the checkboxes
     {
-        anchors.left: parent.left
+        // anchors.left: parent.left
         //anchors.verticalCenter: parent.verticalCenter
         height: parent.height
         width: parent.width*0.1
@@ -54,6 +54,7 @@ Item {
         Column
         {
             id: column
+            // height: parent.height
             anchors.fill: parent
             ButtonGroup
             {
@@ -74,7 +75,7 @@ Item {
                 model: listCheckModel
                 delegate: myCheckDelegate
                 width: 200
-                anchors.top: parentBox.bottom
+                // anchors.top: parentBox.bottom
                 anchors.topMargin: 0
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 0
