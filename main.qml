@@ -22,7 +22,7 @@ Item
         onAddStructIndex: selectionView.addStructIndex(structIndex)
         onClearVariableList: selectionView.clearVariableList()
         onAddVariable: selectionView.addVariable(variableName, variableIndex, variableType, variableValue, enableInput, checked)
-        onChangeVariableValue: selectionView.changeVariableValue(lynxId, value)
+        // onChangeVariableValue: selectionView.changeVariableValue(lynxId, value)
     }
 
     Connections

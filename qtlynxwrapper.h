@@ -15,9 +15,14 @@ class QtLynxId : public QObject
 
 public:
     explicit QtLynxId(QObject *parent = nullptr) : QObject(parent) {}
+    QtLynxId(const QtLynxId & other) : QObject(nullptr), _lynxId(other._lynxId) {}
     QtLynxId(const LynxId & other) : QObject(nullptr), _lynxId(other) {}
 
-    const LynxId & operator =(const LynxId other) { return(_lynxId = other); }
+    const QtLynxId & operator =(const QtLynxId other) { _lynxId = other._lynxId; return *this; }
+    const QtLynxId & operator =(const LynxId other) { _lynxId = other; return *this; }
+
+    bool operator ==(const QtLynxId & other) { return (_lynxId == other._lynxId); }
+    bool operator !=(const QtLynxId & other) { return (_lynxId != other._lynxId); }
 
     int structIndex() { return _lynxId.structIndex; }
     int variableIndex() { return _lynxId.variableIndex; }
@@ -36,6 +41,8 @@ public slots:
 
 };
 
+// Q_DECLARE_METATYPE(QtLynxId)
+
 class QtLynxWrapper : public QObject
 {
     Q_OBJECT
@@ -53,13 +60,23 @@ public:
     LynxUartQt * lynxUartPointer() { return &_uart; }
 
 signals:
-    void newDataReceived(const LynxId & lynxId);
+    void newDataReceived(const QtLynxId * lynxId);
     void newDeviceInfoReceived(const LynxDeviceInfo & deviceInfo);
 
 public slots:
     void readData();
-    QString getStructName(QtLynxId * lynxId);
-    QString getVariableName(QtLynxId * lynxId);
+
+    // Returns the description of the struct pointed to by lynxId. If lynxId points to a variable it returns the name of the containing struct
+    QString getStructName(const QtLynxId * lynxId);
+    // Returns the description of the variable pointed to by lynxId. If lynxId points to a struct an empty string is returned
+    QString getVariableName(const QtLynxId * lynxId);
+
+    // Returns 0 if lynxId points to a string
+    double getValueAsNumber(const QtLynxId * lynxId);
+    // Returns any value type as a string
+    QString getValueAsString(const QtLynxId * lynxId);
+    // Returns false if lynxId does not point to a bool
+    bool getValueAsBool(const QtLynxId * lynxId);
 };
 
 #endif // QTLYNXWRAPPER_H

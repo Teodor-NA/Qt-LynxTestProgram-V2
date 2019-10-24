@@ -124,7 +124,7 @@ Item {
                     validator: IntValidator{}
                     font.pixelSize: 15
                     enabled: structId.valid
-                    onAccepted: backEnd.startPeriodic(text, structId)
+                    onAccepted: { text = ""; backEnd.startPeriodic(text, structId) }
                 }
 
                 Button
@@ -133,7 +133,7 @@ Item {
                     text: "Start"
                     font.pixelSize: 15
                     enabled: structId.valid
-                    onClicked: backEnd.startPeriodic(periodicInput.text, structId)
+                    onClicked: { periodicInput.text = ""; backEnd.startPeriodic(periodicInput.text, structId) }
                 }
 
                 Button

@@ -19,7 +19,18 @@ MyFrame {
     property bool hovered: false
 
     height: column.height
-    color: selected ? Qt.darker("white", 1.15) : (hovered ? Qt.darker("white", 1.05) : "white")
+    color: selected ? Qt.darker("white", 1.4) : (hovered ? Qt.darker("white", 1.05) : Qt.darker("white", 1.1))
+
+    Connections
+    {
+        target: lynx
+        onNewDataReceived:
+        {
+            if (lynxId.structIndex === variableId.structIndex)
+                if ((lynxId.variableIndex < 0) || (lynxId.variableIndex === variableId.variableIndex))
+                    variableValue = lynx.getValueAsString(variableId)
+        }
+    }
 
     LynxId
     {
