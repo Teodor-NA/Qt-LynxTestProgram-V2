@@ -392,13 +392,54 @@ void BackEnd::sendVariable(const QtLynxId * lynxId, const QString & value)
 
         if (!parseOk)
         {
-            qDebug() << value << "could not be converted to a number, nothing will be sent";
+            qDebug() << value << "Could not be converted to a number, nothing will be sent";
             return;
         }
 
         qDebug() << "Sending value:" << tempVal;
 
         _lynx->setValue(tempVal, lynxId->lynxId());
+        _uart->send(lynxId->lynxId());
+
+    }
+        break;
+    case LynxLib::eBool:
+    {
+        if (value.toLower() == "false")
+        {
+            qDebug() << "Sending value: false";
+            _lynx->setBool(false, lynxId->lynxId());
+            _uart->send(lynxId->lynxId());
+            return;
+        }
+        else if (value.toLower() == "true")
+        {
+            qDebug() << "Sending value: true";
+            _lynx->setBool(true, lynxId->lynxId());
+            _uart->send(lynxId->lynxId());
+            return;
+        }
+
+        bool parseOk;
+        double tempVal = value.toDouble(&parseOk);
+
+        if (!parseOk)
+        {
+            qDebug() << value << "Could not be converted to a number or boolean value, nothing will be sent";
+            return;
+        }
+
+        if (tempVal == 0.0)
+        {
+            qDebug() << "Sending value: false";
+            _lynx->setBool(false, lynxId->lynxId());
+        }
+        else
+        {
+            qDebug() << "Sending value: true";
+            _lynx->setBool(true, lynxId->lynxId());
+        }
+
         _uart->send(lynxId->lynxId());
 
     }

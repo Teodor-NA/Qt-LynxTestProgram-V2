@@ -29,6 +29,9 @@ MyFrame {
             if (lynxId.structIndex === variableId.structIndex)
                 if ((lynxId.variableIndex < 0) || (lynxId.variableIndex === variableId.variableIndex))
                     variableValue = lynx.getValueAsString(variableId)
+
+//            if (valueInput.activeFocus && (valueInput.preeditText == valueInput.text))
+//                valueInput.selectAll()
         }
     }
 
