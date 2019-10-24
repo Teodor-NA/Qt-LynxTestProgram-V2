@@ -36,7 +36,10 @@ Item {
                 {
                     backEnd.deviceInfoIndex = currentIndex
                     if (currentIndex >= 0)
+                    {
                         backEnd.selectDevice()
+                        structListView.currentIndex = -1
+                    }
                 }
                 Component.onCompleted:
                 {
@@ -53,7 +56,7 @@ Item {
 
             ScrollView
             {
-                height: parent.height - structButtonsRow.height
+                height: parent.height - structButtonsRow.height - periodicButtonsRow.height
                 width: parent.width
                 clip: true
 
@@ -69,6 +72,8 @@ Item {
                         backEnd.structInfoIndex = currentIndex
                         if (currentIndex >= 0)
                             backEnd.selectStruct()
+                        else
+                            variableModel.clear()
                     }
                     Component.onCompleted:
                     {
@@ -81,11 +86,63 @@ Item {
             Row
             {
                 id: structButtonsRow
-                height: 30
+                height: 50
+                width: parent.width
+                spacing: 10
 
                 Button
                 {
-                    id: startPeriadic
+                    width: HF.evenWidthSpacing(parent)
+                    text: "Add struct"
+                    font.pixelSize: 15
+                    enabled: (structListView.currentIndex >= 0) && !structId.valid
+                    onClicked: backEnd.generateStruct()
+                }
+
+                Button
+                {
+                    width: HF.evenWidthSpacing(parent)
+                    text: "Pull struct"
+                    font.pixelSize: 15
+                    enabled: structId.valid
+                    onClicked: backEnd.pullStruct(structId)
+                }
+            }
+
+            Row
+            {
+                id: periodicButtonsRow
+                height: 50
+                width: parent.width
+                spacing: 10
+
+                TextField
+                {
+                    id: periodicInput
+                    width: HF.evenWidthSpacing(parent)
+                    placeholderText: "Interval [ms]"
+                    validator: IntValidator{}
+                    font.pixelSize: 15
+                    enabled: structId.valid
+                    onAccepted: backEnd.startPeriodic(text, structId)
+                }
+
+                Button
+                {
+                    width: HF.evenWidthSpacing(parent)
+                    text: "Start"
+                    font.pixelSize: 15
+                    enabled: structId.valid
+                    onClicked: backEnd.startPeriodic(periodicInput.text, structId)
+                }
+
+                Button
+                {
+                    width: HF.evenWidthSpacing(parent)
+                    text: "Stop"
+                    font.pixelSize: 15
+                    enabled: structId.valid
+                    onClicked: backEnd.stopPeriodic(structId)
                 }
             }
         }
@@ -98,11 +155,15 @@ Item {
 
             ListView
             {
-                id: variableListview
+                id: variableListView
                 spacing: 10
                 model: variableModel
                 delegate: variableDelegate
-                // Component.onCompleted: variableModel.append({})
+                Component.onCompleted:
+                {
+                    variableModel.clear()
+                    currentIndex = -1
+                }
 
             }
         }
@@ -141,13 +202,11 @@ Item {
 
         ListElement
         {
-            checkedOut: false
-            checkedIn: false
             variableNameIn: "No selection"
-            variableIndexIn: -1
-            variableTypeIn: "No Selection"
+            variableTypeIn: "No selection"
             variableValueIn: "No selection"
             enableInputIn: false
+            selectedIn: false
         }
 
     }
@@ -163,7 +222,7 @@ Item {
             structCount: structCountIn
             lynxVersion: lynxVersionIn
             width: deviceListview.width
-            highlight: (deviceListview.currentIndex == index)
+            selected: (deviceListview.currentIndex == index)
             hovered: deviceMouseArea.containsMouse
 
             MouseArea
@@ -186,7 +245,7 @@ Item {
             structId: structIdIn
             variableCount: variableCountIn
             width: structListView.width
-            highlight: (structListView.currentIndex == index)
+            selected: (structListView.currentIndex == index)
             hovered: structMouseArea.containsMouse
 
             MouseArea
@@ -205,15 +264,30 @@ Item {
 
         VariableInfo
         {
-            variableName: variableNameIn
-            variableIndex: variableIndexIn
+            id: varInfo
             structIndex: structId.structIndex
+            variableIndex: index
+            variableName: variableNameIn
             variableType: variableTypeIn
             variableValue: variableValueIn
             enableInput: enableInputIn
-            checkedInput: checkedIn
-            enableCheckbox: structId.valid
-            onCheckedChanged: checkedOut = checkedIn = checked
+            hovered: variableMouseArea.containsMouse
+            width: variableListView.width
+            selected: selectedIn
+
+            MouseArea
+            {
+                id: variableMouseArea
+                width: parent.width
+                height: parent.height/2
+                onClicked:
+                {
+                    varInfo.selected = !varInfo.selected;
+                    scopeServer.changePlotItem(varInfo.structIndex, varInfo.variableIndex, varInfo.selected)
+                }
+                hoverEnabled: true
+                enabled: (varInfo.valid && varInfo.enableSelection)
+            }
         }
     }
 
@@ -275,16 +349,16 @@ Item {
                 variableTypeIn: variableType,
                 variableValueIn: variableValue,
                 enableInputIn: enableInput,
-                checkedIn: checked
+                selectedIn: checked
             }
         )
     }
 
     function changeVariableValue(lynxId, value)
     {
-        if (lynxId.structIndex !== structLynxId.structIndex)
+        if (lynxId.structIndex !== structId.structIndex)
         {
-            console.log("The struct index: " + lynxId.structIndex + " is not the same as the open struct index: " + structLynxId.structIndex)
+            // console.log("The struct index: " + lynxId.structIndex + " is not the same as the open struct index: " + structId.structIndex)
             return;
         }
 

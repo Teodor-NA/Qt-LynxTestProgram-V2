@@ -109,7 +109,7 @@ public slots:
     void selectDevice(); //int infoIndex);
     void selectStruct(); //int infoIndex);
     int generateStruct();
-    void pullStruct(int structIndex);
+    void pullStruct(QtLynxId * lynxId);
     void startPeriodic(unsigned int interval, QtLynxId * lynxId); // int structIndex = -1);
     void stopPeriodic(QtLynxId * lynxId);  // int structIndex = -1);
     void sendVariable(QtLynxId * lynxId, const QString & value);// int structIndex, int variableIndex, const QString & value);

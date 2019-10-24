@@ -10,11 +10,11 @@ MyFrame {
     property string structCount: "Not set"
     property string lynxVersion: "Not set"
     property var fontPixelSize: width/30
-    property bool highlight: false
+    property bool selected: false
     property bool hovered: false
 
     height: column.height
-    color: highlight ? Qt.darker("white", 1.15) : (hovered ? Qt.darker("white", 1.05) : "white")
+    color: selected ? Qt.darker("white", 1.15) : (hovered ? Qt.darker("white", 1.05) : "white")
 
     Column
     {

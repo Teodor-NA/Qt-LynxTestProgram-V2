@@ -24,7 +24,6 @@ void BackEnd::scan()
 
 void BackEnd::newDataReceived(const LynxId & lynxId)
 {
-
     QString value;
     LynxLib::E_LynxSimplifiedType tempType;
 
@@ -319,18 +318,16 @@ int BackEnd::generateStruct()
     return (_dynamicIds.count() - 1);
 }
 
-void BackEnd::pullStruct(int structIndex)
+void BackEnd::pullStruct(QtLynxId * lynxId)
 {
-    LynxId tmpId(structIndex);
-
-    if (tmpId.structIndex < 0)
+    if (lynxId->lynxId().structIndex < 0)
     {
         qDebug() << "Could not find datagram. Did you remember to add the struct?";
         return;
     }
 
-    qDebug() << "Pulling datagram";
-    _uart->pullDatagram(tmpId);
+    qDebug() << "Pulling datagram with structIndex:" << lynxId->lynxId().structIndex << "and variableIndex:" << lynxId->lynxId().variableIndex;
+    _uart->pullDatagram(lynxId->lynxId());
 }
 
 void BackEnd::startPeriodic(unsigned int interval, QtLynxId * lynxId)
