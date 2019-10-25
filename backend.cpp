@@ -292,33 +292,10 @@ int BackEnd::generateStruct()
 
     this->addStructIndex(_dynamicIds.last().structLynxId.structIndex);
 
-    // Add variable values
-    QString value;
-    LynxId tempId;
-    QtLynxId tmpQtId;
-    LynxLib::E_LynxSimplifiedType tempType;
-    for (int i = 0; i < _dynamicIds.last().variableIds.count(); i++)
-    {
-        tempId = _dynamicIds.last().variableIds.at(i);
-        tempType = _lynx->simplifiedType(tempId);
-        switch (tempType)
-        {
-        case LynxLib::eString:
-            value = QString(_lynx->getString(tempId));
-            break;
-        case LynxLib::eNumber:
-            value = QString::number(_lynx->getValue(tempId));
-            break;
-        default:
-            value = "Error";
-            break;
-        }
-
-        tmpQtId = tempId;
-        this->changeVariableValue(&tmpQtId, value);
-    }
-
     qDebug() << "Struct was succesfully added, new index:" << (_dynamicIds.count() - 1);
+
+    // Pull the datagram to update the values
+    _uart->pullDatagram(_dynamicIds.last().structLynxId);
 
     return (_dynamicIds.count() - 1);
 }

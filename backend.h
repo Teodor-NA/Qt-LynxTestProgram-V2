@@ -95,7 +95,7 @@ signals:
     void addStructIndex(int structIndex);
     void clearVariableList();
     void addVariable(const QString & variableName, int variableIndex, const QString & variableType, const QString & variableValue, bool enableInput, bool checked);
-    void changeVariableValue(QtLynxId * lynxId, const QString & value); // (int structIndex, int variableIndex, const QString & value);
+//    void changeVariableValue(QtLynxId * lynxId, const QString & value); // (int structIndex, int variableIndex, const QString & value);
     void fullscreenChanged();
     void deviceInfoIndexChanged();
     void structInfoIndexChanged();

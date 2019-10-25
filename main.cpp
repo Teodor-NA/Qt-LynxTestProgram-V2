@@ -32,6 +32,8 @@ int main(int argc, char *argv[])
     qmlRegisterType<QtLynxId>("lynxlib", 1, 0, "LynxId");
     qRegisterMetaType<QtLynxId*>("const QtLynxId*");
 
+    qmlRegisterType<QtLynxWrapper>("lynxlib", 1, 0, "Lynx");
+
     viewer.setTitle("Qt-Lynx Test Application");
     viewer.setSource(QUrl(QStringLiteral("qrc:/main.qml")));
     viewer.setWidth(1280);

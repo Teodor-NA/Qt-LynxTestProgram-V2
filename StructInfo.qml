@@ -35,7 +35,8 @@ MyFrame {
             {
                 descripition: "Struct name:"
                 text: structName
-                width: HF.evenWidthSpacing(parent)
+                width: HF.starWidthSpacing(parent, 0.65)
+                labelRatio: 0.4
                 fontPixelSize: myFrame.fontPixelSize
             }
 
@@ -43,7 +44,7 @@ MyFrame {
             {
                 descripition: "Struct ID:"
                 text: structId
-                width: HF.evenWidthSpacing(parent)
+                width: HF.starWidthSpacing(parent, 0.35)
                 fontPixelSize: myFrame.fontPixelSize
             }
         }
@@ -58,13 +59,14 @@ MyFrame {
             {
                 descripition: "Variable count:"
                 text: variableCount
-                width: HF.evenWidthSpacing(parent)
+                width: HF.starWidthSpacing(parent, 0.65)
+                labelRatio: 0.4
                 fontPixelSize: myFrame.fontPixelSize
             }
 
             Rectangle
             {
-                width:  HF.evenWidthSpacing(parent)
+                width:  HF.starWidthSpacing(parent, 0.35)
             }
 
 //            DescriptionText

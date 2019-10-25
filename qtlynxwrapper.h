@@ -59,6 +59,16 @@ public:
     LynxManager * lynxPointer() { return &_lynx; }
     LynxUartQt * lynxUartPointer() { return &_uart; }
 
+    enum QtLynxType
+    {
+        E_NotInit = 0,
+        E_Number,
+        E_String,
+        E_Bool
+    };
+
+    Q_ENUM(QtLynxType)
+
 signals:
     void newDataReceived(const QtLynxId * lynxId);
     void newDeviceInfoReceived(const LynxDeviceInfo & deviceInfo);
@@ -77,6 +87,8 @@ public slots:
     QString getValueAsString(const QtLynxId * lynxId);
     // Returns false if lynxId does not point to a bool
     bool getValueAsBool(const QtLynxId * lynxId);
+    // Returns the simplified data type (not init, number, string or bool)
+    QtLynxWrapper::QtLynxType getDataType(const QtLynxId * lynxId);
 };
 
 #endif // QTLYNXWRAPPER_H

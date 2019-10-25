@@ -8,15 +8,25 @@ MyFrame {
     id: myFrame
     property var structIndex: -1
     property var variableIndex: -1
-    property bool valid: (structIndex >= 0)
-    property bool enableSelection: (variableType != "String")
+    property bool valid: ((variableId.structIndex >= 0) && (variableId.variableIndex >= 0))
+    property bool enableSelection: (dataType != Lynx.E_String)
     property bool enableInput: false
     property string variableName: "Not set"
     property string variableType: "Not set"
-    property string variableValue: valueInput.text
+    property var dataType: Lynx.E_NotInit
+    // property string variableValue: valueInput.text
     property var fontPixelSize: width/30
     property bool selected: false
     property bool hovered: false
+
+    onValidChanged:
+    {
+        if (valid)
+        {
+            dataType = lynx.getDataType(variableId)
+            valueInput.text = lynx.getValueAsString(variableId)
+        }
+    }
 
     height: column.height
     color: selected ? Qt.darker("white", 1.4) : (hovered ? Qt.darker("white", 1.05) : Qt.darker("white", 1.1))
@@ -28,7 +38,7 @@ MyFrame {
         {
             if (lynxId.structIndex === variableId.structIndex)
                 if ((lynxId.variableIndex < 0) || (lynxId.variableIndex === variableId.variableIndex))
-                    variableValue = lynx.getValueAsString(variableId)
+                    valueInput.text = lynx.getValueAsString(variableId)
 
 //            if (valueInput.activeFocus && (valueInput.preeditText == valueInput.text))
 //                valueInput.selectAll()
@@ -40,6 +50,7 @@ MyFrame {
         id: variableId
         structIndex: myFrame.structIndex
         variableIndex: myFrame.variableIndex
+        // property bool valid: ((structIndex >= 0) && (variableIndex >= 0))
     }
 
     Column
@@ -96,148 +107,62 @@ MyFrame {
                 id: valueFrame
                 width: parent.width - parent.spacing - valueLabel.width - border.width*10
                 height: valueInput.height*1.1
-                border.color: myFrame.enableInput ? "black" : "transparent"
+                border.color: (myFrame.enableInput && myFrame.valid) ? "black" : "transparent"
+//                visible: (myFrame.dataType != Lynx.E_Bool)
 
                 TextInput
                 {
                     id: valueInput
                     height: myFrame.fontPixelSize*2
                     width: parent.width
-//                    anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: valueFrame.verticalCenter
-                    text: variableValue
+                    text: lynx.getValueAsString(variableId)
                     font.pixelSize: myFrame.fontPixelSize
                     onActiveFocusChanged: if (activeFocus) selectAll()
                     horizontalAlignment: TextInput.AlignHCenter
                     verticalAlignment: TextInput.AlignVCenter
-                    enabled: (myFrame.enableInput && myFrame.valid)
+                    enabled: (myFrame.enableInput && myFrame.valid) // && (myFrame.dataType != Lynx.E_Bool))
                     onAccepted: backEnd.sendVariable(variableId, text)
 
+                    MouseArea
+                    {
+                        anchors.fill: parent
+                        visible: (myFrame.dataType == Lynx.E_Bool)
+                        onClicked:
+                        {
+                            if (lynx.getValueAsBool(variableId))
+                            {
+                                valueInput.text = "False";
+                                backEnd.sendVariable(variableId, "False")
+                            }
+                            else
+                            {
+                                valueInput.text = "True";
+                                backEnd.sendVariable(variableId, "True")
+                            }
+                        }
+                    }
                 }
             }
+
+//            Button
+//            {
+//                id: valueBool
+//                property bool active: lynx.getValueAsBool(variableId)
+//                height: valueFrame.height
+//                width: valueFrame.width
+//                visible: !valueFrame.visible
+//                text: active ? "True" : "False"
+
+//                background:
+//                MyFrame
+//                {
+//                    anchors.fill: parent
+//                    border.color: (myFrame.enableInput && myFrame.valid) ? "black" : "transparent"
+
+//                }
+
+//            }
         }
     }
 }
-
-
-
-//import QtQuick 2.12
-//import QtQuick.Controls 2.12
-//import lynxlib 1.0
-
-//MyFrame
-//{
-//    id: myFrame
-//    property bool checked: checkBox.checked
-//    property bool enableCheckbox: false
-//    property string variableName: "Not set"
-//    property var structIndex: -1
-//    property var variableIndex: -1
-//    property string variableType: "Not Set"
-//    property string variableValue: textInput.text
-//    property bool enableInput: false
-//    property bool checkedInput: false
-
-//    implicitHeight: 120
-//    implicitWidth: 400
-
-//    LynxId
-//    {
-//        id: lynxId
-//        structIndex: myFrame.structIndex
-//        variableIndex: myFrame.variableIndex
-//    }
-
-//    Row
-//    {
-//        anchors.fill: parent
-//        spacing: 10
-
-//        CheckBox
-//        {
-//            id: checkBox
-//            checked: myFrame.checkedInput
-//            anchors.verticalCenter: parent.verticalCenter
-//            visible: ((variableType !== "Not set") && (variableType !== "String")) && enableCheckbox
-//            onCheckedChanged:
-//            {
-//                scopeServer.changePlotItem(structIndex, variableIndex, checked)
-//            }
-//        }
-
-//        Rectangle
-//        {
-//            width: checkBox.width
-//            height: checkBox.height
-//            anchors.verticalCenter: parent.verticalCenter
-//            visible: !checkBox.visible
-//            color: "transparent"
-//        }
-
-//        Column
-//        {
-//            // spacing: 5
-//            anchors.verticalCenter: parent.verticalCenter
-
-//            DescriptionText
-//            {
-//                descripition: "Variable name:"
-//                text: variableName
-//            }
-
-//            DescriptionText
-//            {
-//                descripition: "Variable index:"
-//                text: variableIndex
-//            }
-
-//            DescriptionText
-//            {
-//                descripition: "Variable type:"
-//                text: variableType
-//            }
-
-//            Row
-//            {
-//                spacing: 10
-//                Label
-//                {
-//                    width: 150
-//                    text: "Value:"
-//                    font.bold: true
-//                    font.pixelSize: 15
-//                    anchors.verticalCenter: parent.verticalCenter
-//                }
-
-//                MyFrame
-//                {
-//                    height: 40
-//                    width: 150
-//                    radius: 10
-//                    border.color: enableInput ? "black" : "transparent"
-
-//                    TextInput
-//                    {
-//                        id: textInput
-//                        padding: 10
-//                        width: parent.width - 2*padding
-//                        anchors.verticalCenter: parent.verticalCenter
-//                        text: myFrame.variableValue
-//                        font.pixelSize: 15
-//                        enabled: enableInput
-//                        onActiveFocusChanged:
-//                        {
-//                            if(activeFocus)
-//                                selectAll()
-//                        }
-//                        onAccepted:
-//                        {
-//                            backEnd.sendVariable(myFrame.structIndex, myFrame.variableIndex, text)
-//                        }
-//                        // onTextChanged: variableValue = text
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}

@@ -15,14 +15,6 @@ Item
         target: backEnd
         onAddPort: portListModel.append({ text: portName })
         onClearPortList: portListModel.clear()
-        onClearDevices: selectionView.clearDevices()
-        onAddDevice: selectionView.addDevice(description, id, version, count)
-        onClearStructList: selectionView.clearStructs()
-        onAddStruct: selectionView.addStruct(structName, structId, variableCount)
-        onAddStructIndex: selectionView.addStructIndex(structIndex)
-        onClearVariableList: selectionView.clearVariableList()
-        onAddVariable: selectionView.addVariable(variableName, variableIndex, variableType, variableValue, enableInput, checked)
-        // onChangeVariableValue: selectionView.changeVariableValue(lynxId, value)
     }
 
     Connections

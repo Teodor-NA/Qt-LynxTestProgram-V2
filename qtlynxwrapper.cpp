@@ -74,3 +74,8 @@ bool QtLynxWrapper::getValueAsBool(const QtLynxId * lynxId)
 
         return false;
 }
+
+QtLynxWrapper::QtLynxType QtLynxWrapper::getDataType(const QtLynxId * lynxId)
+{
+    return QtLynxWrapper::QtLynxType(_lynx.simplifiedType(lynxId->lynxId()));
+}
