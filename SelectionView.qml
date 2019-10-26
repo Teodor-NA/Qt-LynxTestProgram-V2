@@ -5,6 +5,63 @@ import "HelperFunctions.js" as HF
 
 Item {
 
+    Connections
+    {
+        target: backEnd
+        onClearDevices:
+        {
+            deviceModel.clear()
+            deviceListView.currentIndex = -1
+        }
+        onAddDevice: // selectionView.addDevice(description, id, version, count)
+        {
+            deviceModel.append
+            (
+                {
+                    deviceNameIn: description,
+                    deviceIdIn: id,
+                    structCountIn: count,
+                    lynxVersionIn: version
+                }
+            )
+        }
+        onClearStructList: // selectionView.clearStructs()
+        {
+            structModel.clear()
+            structListView.currentIndex = -1
+        }
+        onAddStruct: // selectionView.addStruct(structName, structId, variableCount)
+        {
+            structModel.append
+            (
+                {
+                    structNameIn: structName,
+                    structIdIn: structId,
+                    variableCountIn: variableCount
+                }
+            )
+        }
+        onAddStructIndex: // selectionView.addStructIndex(structIndex)
+        {
+            structId.structIndex = structIndex
+        }
+        onClearVariableList: variableModel.clear() // selectionView.clearVariableList()
+        onAddVariable: // selectionView.addVariable(variableName, variableIndex, variableType, variableValue, enableInput, checked)
+        {
+            variableModel.append
+            (
+                {
+                    variableNameIn: variableName,
+                    variableIndexIn: variableIndex,
+                    variableTypeIn: variableType,
+                    // variableValueIn: variableValue,
+                    enableInputIn: enableInput,
+                    selectedIn: checked
+                }
+            )
+        }
+    }
+
     LynxId
     {
         id: structId
@@ -124,7 +181,7 @@ Item {
                     validator: IntValidator{}
                     font.pixelSize: 15
                     enabled: structId.valid
-                    onAccepted: backEnd.startPeriodic(text, structId)
+                    onAccepted: { backEnd.startPeriodic(text, structId); text = "" }
                 }
 
                 Button
@@ -133,7 +190,7 @@ Item {
                     text: "Start"
                     font.pixelSize: 15
                     enabled: structId.valid
-                    onClicked: backEnd.startPeriodic(periodicInput.text, structId)
+                    onClicked: { backEnd.startPeriodic(periodicInput.text, structId); periodicInput.text = "" }
                 }
 
                 Button
@@ -269,7 +326,7 @@ Item {
             variableIndex: index
             variableName: variableNameIn
             variableType: variableTypeIn
-            variableValue: variableValueIn
+            // variableValue: variableValueIn
             enableInput: enableInputIn
             hovered: variableMouseArea.containsMouse
             width: variableListView.width
@@ -289,86 +346,5 @@ Item {
                 enabled: (varInfo.valid && varInfo.enableSelection)
             }
         }
-    }
-
-    function clearDevices()
-    {
-        deviceModel.clear()
-        deviceListView.currentIndex = -1
-    }
-
-    function addDevice(description, id, version, structCount)
-    {
-        deviceModel.append
-            (
-                {
-                    deviceNameIn: description,
-                    deviceIdIn: id,
-                    structCountIn: structCount,
-                    lynxVersionIn: version
-                }
-            )
-    }
-
-    function clearStructs()
-    {
-        structModel.clear()
-        structListView.currentIndex = -1
-    }
-
-    function addStruct(structName, structId, variableCount)
-    {
-        structModel.append
-        (
-            {
-                structNameIn: structName,
-                structIdIn: structId,
-                variableCountIn: variableCount
-            }
-        )
-    }
-
-    function addStructIndex(structIndex)
-    {
-        structId.structIndex = structIndex
-    }
-
-    function clearVariableList()
-    {
-        variableModel.clear()
-    }
-
-    function addVariable(variableName, variableIndex, variableType, variableValue, enableInput, checked)
-    {
-       // console.log("variableIndex: " + variableIndex + ", variableName: " + variableName + ", checked: " + checked)
-
-        variableModel.append(
-            {
-                variableNameIn: variableName,
-                variableIndexIn: variableIndex,
-                variableTypeIn: variableType,
-                variableValueIn: variableValue,
-                enableInputIn: enableInput,
-                selectedIn: checked
-            }
-        )
-    }
-
-    function changeVariableValue(lynxId, value)
-    {
-        if (lynxId.structIndex !== structId.structIndex)
-        {
-            // console.log("The struct index: " + lynxId.structIndex + " is not the same as the open struct index: " + structId.structIndex)
-            return;
-        }
-
-        if ((lynxId.variableIndex < 0) || (lynxId.variableIndex >= variableModel.count))
-        {
-            console.log("Variable index out of bounds")
-            return
-        }
-
-        // variableModel.setProperty(variableIndex, "variableValueIn", value)
-        variableModel.get(lynxId.variableIndex).variableValueIn = value
     }
 }

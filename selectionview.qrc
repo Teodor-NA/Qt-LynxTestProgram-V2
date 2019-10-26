@@ -1,9 +1,0 @@
-<RCC>
-    <qresource prefix="/selectionview" lang="qml">
-        <file>selectionview/DeviceInfo.qml</file>
-        <file>selectionview/SelectionView.qml</file>
-        <file>selectionview/SelectionWindowForm.ui.qml</file>
-        <file>selectionview/StructInfo.qml</file>
-        <file>selectionview/VariableInfo.qml</file>
-    </qresource>
-</RCC>

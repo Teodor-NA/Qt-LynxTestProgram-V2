@@ -22,65 +22,67 @@ void BackEnd::scan()
     // this->addDevice("desc");
 }
 
-void BackEnd::newDataReceived(const LynxId & lynxId)
-{
-    QString value;
-    LynxLib::E_LynxSimplifiedType tempType;
+//void BackEnd::newDataReceived(QtLynxId * lynxId)
+//{
+//    QString value;
+//    LynxLib::E_LynxSimplifiedType tempType;
 
-    QtLynxId tmpQtId;
+//    // QtLynxId tmpQtId;
 
-    if (lynxId.variableIndex < 0)
-    {
-        int varCount = _lynx->structVariableCount(lynxId.structIndex);
-        LynxId tempId = lynxId;
-        // All variables
-        for (int i = 0; i < varCount; i++)
-        {
-            tempId.variableIndex = i;
-            tempType = _lynx->simplifiedType(tempId);
+//    if (lynxId->lynxId().variableIndex < 0)
+//    {
+//        int varCount = _lynx->structVariableCount(lynxId->lynxId().structIndex);
+//        LynxId tempId = lynxId->lynxId();
+//        QtLynxId tempQtId = *lynxId;
+//        // All variables
+//        for (int i = 0; i < varCount; i++)
+//        {
+//            tempId.variableIndex = i;
+//            tempType = _lynx->simplifiedType(tempId);
 
-            switch (tempType)
-            {
-            case LynxLib::eString:
-                value = QString(_lynx->getString(tempId));
-                break;
-            case LynxLib::eNumber:
-                value = QString::number(_lynx->getValue(tempId));
-                break;
-            default:
-                value = "Error";
-                break;
-            }
+//            switch (tempType)
+//            {
+//            case LynxLib::eString:
+//                value = QString(_lynx->getString(tempId));
+//                break;
+//            case LynxLib::eNumber:
+//                value = QString::number(_lynx->getValue(tempId));
+//                break;
+//            default:
+//                value = "Error";
+//                break;
+//            }
 
-            tmpQtId = tempId;
+//            // tmpQtId = tempId;
 
-            this->changeVariableValue(&tmpQtId, value); // (tempId.structIndex, tempId.variableIndex, value)
-        }
-    }
-    else
-    {
-        // Single variable
-        tempType = _lynx->simplifiedType(lynxId);
-        switch (tempType)
-        {
-        case LynxLib::eString:
-            value = QString(_lynx->getString(lynxId));
-            break;
-        case LynxLib::eNumber:
-            value = QString::number(_lynx->getValue(lynxId));
-            break;
-        default:
-            value = "Error";
-            break;
-        }
+//            this->changeVariableValue(&tempQtId, value); // (tempId.structIndex, tempId.variableIndex, value)
+//        }
+//    }
+//    else
+//    {
+//        QtLynxId tempQtId = *lynxId;
+//        // Single variable
+//        tempType = _lynx->simplifiedType(lynxId->lynxId());
+//        switch (tempType)
+//        {
+//        case LynxLib::eString:
+//            value = QString(_lynx->getString(lynxId->lynxId()));
+//            break;
+//        case LynxLib::eNumber:
+//            value = QString::number(_lynx->getValue(lynxId->lynxId()));
+//            break;
+//        default:
+//            value = "Error";
+//            break;
+//        }
 
-        tmpQtId = lynxId;
+//        // tmpQtId = lynxId;
 
-        this->changeVariableValue(&tmpQtId, value); // (lynxId.structIndex, lynxId.variableIndex, value)
-    }
+//        this->changeVariableValue(&tempQtId, value); // (lynxId.structIndex, lynxId.variableIndex, value)
+//    }
 
 
-}
+//}
 
 void BackEnd::newDeviceInfoReceived(const LynxDeviceInfo & deviceInfo)
 {
@@ -222,6 +224,9 @@ void BackEnd::selectStruct() // int infoIndex)
                 case LynxLib::eNumber:
                     data = QString::number(_lynx->getValue(tempId));
                     break;
+                case LynxLib::eBool:
+                    data = (_lynx->getBool(tempId) ? "True" : "False");
+                    break;
                 default:
                     data = "Error";
                     break;
@@ -287,38 +292,15 @@ int BackEnd::generateStruct()
 
     this->addStructIndex(_dynamicIds.last().structLynxId.structIndex);
 
-    // Add variable values
-    QString value;
-    LynxId tempId;
-    QtLynxId tmpQtId;
-    LynxLib::E_LynxSimplifiedType tempType;
-    for (int i = 0; i < _dynamicIds.last().variableIds.count(); i++)
-    {
-        tempId = _dynamicIds.last().variableIds.at(i);
-        tempType = _lynx->simplifiedType(tempId);
-        switch (tempType)
-        {
-        case LynxLib::eString:
-            value = QString(_lynx->getString(tempId));
-            break;
-        case LynxLib::eNumber:
-            value = QString::number(_lynx->getValue(tempId));
-            break;
-        default:
-            value = "Error";
-            break;
-        }
-
-        tmpQtId = tempId;
-        this->changeVariableValue(&tmpQtId, value);
-    }
-
     qDebug() << "Struct was succesfully added, new index:" << (_dynamicIds.count() - 1);
+
+    // Pull the datagram to update the values
+    _uart->pullDatagram(_dynamicIds.last().structLynxId);
 
     return (_dynamicIds.count() - 1);
 }
 
-void BackEnd::pullStruct(QtLynxId * lynxId)
+void BackEnd::pullStruct(const QtLynxId * lynxId)
 {
     if (lynxId->lynxId().structIndex < 0)
     {
@@ -330,7 +312,7 @@ void BackEnd::pullStruct(QtLynxId * lynxId)
     _uart->pullDatagram(lynxId->lynxId());
 }
 
-void BackEnd::startPeriodic(unsigned int interval, QtLynxId * lynxId)
+void BackEnd::startPeriodic(unsigned int interval, const QtLynxId * lynxId)
 {
     // LynxId tmpId(structIndex);
 
@@ -344,7 +326,7 @@ void BackEnd::startPeriodic(unsigned int interval, QtLynxId * lynxId)
     _uart->remotePeriodicStart(lynxId->lynxId(), interval);
 }
 
-void BackEnd::stopPeriodic(QtLynxId * lynxId)
+void BackEnd::stopPeriodic(const QtLynxId * lynxId)
 {
     // LynxId tmpId(structIndex);
 
@@ -358,7 +340,7 @@ void BackEnd::stopPeriodic(QtLynxId * lynxId)
     _uart->remotePeriodicStop(lynxId->lynxId());
 }
 
-void BackEnd::sendVariable(QtLynxId * lynxId, const QString & value)
+void BackEnd::sendVariable(const QtLynxId * lynxId, const QString & value)
 {
     if (lynxId->lynxId().structIndex < 0)
     {
@@ -387,13 +369,54 @@ void BackEnd::sendVariable(QtLynxId * lynxId, const QString & value)
 
         if (!parseOk)
         {
-            qDebug() << value << "could not be converted to a number, nothing will be sent";
+            qDebug() << value << "Could not be converted to a number, nothing will be sent";
             return;
         }
 
         qDebug() << "Sending value:" << tempVal;
 
         _lynx->setValue(tempVal, lynxId->lynxId());
+        _uart->send(lynxId->lynxId());
+
+    }
+        break;
+    case LynxLib::eBool:
+    {
+        if (value.toLower() == "false")
+        {
+            qDebug() << "Sending value: false";
+            _lynx->setBool(false, lynxId->lynxId());
+            _uart->send(lynxId->lynxId());
+            return;
+        }
+        else if (value.toLower() == "true")
+        {
+            qDebug() << "Sending value: true";
+            _lynx->setBool(true, lynxId->lynxId());
+            _uart->send(lynxId->lynxId());
+            return;
+        }
+
+        bool parseOk;
+        double tempVal = value.toDouble(&parseOk);
+
+        if (!parseOk)
+        {
+            qDebug() << value << "Could not be converted to a number or boolean value, nothing will be sent";
+            return;
+        }
+
+        if (tempVal == 0.0)
+        {
+            qDebug() << "Sending value: false";
+            _lynx->setBool(false, lynxId->lynxId());
+        }
+        else
+        {
+            qDebug() << "Sending value: true";
+            _lynx->setBool(true, lynxId->lynxId());
+        }
+
         _uart->send(lynxId->lynxId());
 
     }

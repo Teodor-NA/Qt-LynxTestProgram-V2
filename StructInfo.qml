@@ -13,7 +13,8 @@ MyFrame {
     property bool hovered: false
 
     height: column.height
-    color: selected ? Qt.darker("white", 1.15) : (hovered ? Qt.darker("white", 1.05) : "white")
+//    color: selected ? Qt.darker("white", 1.15) : (hovered ? Qt.darker("white", 1.05) : "white")
+    color: selected ? Qt.darker("white", 1.4) : (hovered ? Qt.darker("white", 1.05) : Qt.darker("white", 1.1))
 
     Column
     {
@@ -34,7 +35,8 @@ MyFrame {
             {
                 descripition: "Struct name:"
                 text: structName
-                width: HF.evenWidthSpacing(parent)
+                width: HF.starWidthSpacing(parent, 0.65)
+                labelRatio: 0.4
                 fontPixelSize: myFrame.fontPixelSize
             }
 
@@ -42,7 +44,7 @@ MyFrame {
             {
                 descripition: "Struct ID:"
                 text: structId
-                width: HF.evenWidthSpacing(parent)
+                width: HF.starWidthSpacing(parent, 0.35)
                 fontPixelSize: myFrame.fontPixelSize
             }
         }
@@ -57,13 +59,14 @@ MyFrame {
             {
                 descripition: "Variable count:"
                 text: variableCount
-                width: HF.evenWidthSpacing(parent)
+                width: HF.starWidthSpacing(parent, 0.65)
+                labelRatio: 0.4
                 fontPixelSize: myFrame.fontPixelSize
             }
 
             Rectangle
             {
-                width:  HF.evenWidthSpacing(parent)
+                width:  HF.starWidthSpacing(parent, 0.35)
             }
 
 //            DescriptionText
