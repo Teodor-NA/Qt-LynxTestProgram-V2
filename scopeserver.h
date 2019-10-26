@@ -17,12 +17,25 @@ struct LoggerInfo
     QString unit;   // Optional: signal unit
     QString color;  // Chart color if needed
 };
+struct checkboxList
+{
+    int index;
+    int parentIndex;
+    bool parent;
+    bool checked;
+};
+struct parentList
+{
+    int index;
+    QString structName;
+};
 
 QT_CHARTS_USE_NAMESPACE
 class ScopeServer : public QObject
 {
     Q_OBJECT
-
+    QList<checkboxList> _checkBoxList;
+    QList<parentList> _parentList;
     QList<LoggerInfo> signalInformation;
     QList<QVector<QPointF>> logger;
    // bool _seriesCreated;
@@ -36,9 +49,6 @@ class ScopeServer : public QObject
     qint64 xLastPause;
     double frameMin;
     double frameMax;
-//    int _firstIndex;
-//    int _secondIndex;
-    // void createDemo();
     LynxManager * _lynx;
 
 public:
@@ -49,8 +59,72 @@ signals:
     void refreshChart(); 
     void createSeries();
 
+    void setParent(int parentIndex,bool check);
+    void updateChild(int childIndex,bool check);
+
 public slots:
+    void clearParents()
+    {
+        _checkBoxList.clear();
+        _parentList.clear();
+    }
+    void updateList(int index,bool parent,bool checked)
+    {
+        if(parent)
+            return;
+        _checkBoxList[index].checked = checked;
+        qDebug()<<" -List updated, index: "<<index<<" has checkstate: "<<checked;
+    }
+    void checkIt(int index,bool parent,bool checked)
+    {
+        _checkBoxList[index].checked = checked;
+        qDebug()<<"function checkIt()";
+        int nTrue = 0;
+        int nFalse = 0;
+        qDebug()<<"index is: "<<index<<" and is parentIndex is: "<<_checkBoxList.at(index).parentIndex << " while checked is: "<<checked;
+         qDebug()<<"";
+        //qDebug()<<"count is: "<<_checkBoxList.count();
+        if(parent)
+        {
+            //qDebug()<<"click is a parent and checked is:"<<checked;
+            for (int n=0;n<_checkBoxList.count();n++)
+            {
+                if(_checkBoxList.at(n).parentIndex==_checkBoxList.at(index).parentIndex)
+                {
+                    //qDebug()<<"setting child index: "<<n <<"with checked"<<checked;
+                    emit updateChild(n,checked);
+                    emit updateChild(n,!checked);
+                    emit updateChild(n,checked);
+                }
+            }
+        }
+        else //child
+        {
+            for (int i=0;i<_checkBoxList.count();i++)
+            {
+
+                if(_checkBoxList.at(i).parentIndex == _checkBoxList.at(index).parentIndex && i!=_checkBoxList.at(index).parentIndex)
+                {
+                    _checkBoxList.at(i).checked ? nTrue++ : nFalse++;
+                }
+            }
+
+            if(nTrue==0)
+                 emit setParent(_checkBoxList.at(index).parentIndex,false);
+            else
+                emit setParent(_checkBoxList.at(index).parentIndex,true);
+
+        }
+    }
+    void appendList(int index,int parentIndex,bool parent,bool checked)
+    {
+        _checkBoxList.append(checkboxList{index,parentIndex,parent,checked});
+        qDebug()<<"appended parent:"<<parent<<" with " <<index<<" with parent index: "<<parentIndex << " while checked is: "<<checked;
+
+    }
     LynxList<LynxId> getIdList();
+    int getParentIndex(const QString &structname,int signalIndex);
+    QString getStructName(int index) { return QString(_lynx->getStructName(signalInformation.at(index).id));}
     void resumeRealtime()
     {
         // logger.clear();

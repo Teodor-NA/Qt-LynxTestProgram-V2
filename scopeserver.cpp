@@ -36,6 +36,7 @@ ScopeServer::ScopeServer(LynxManager * lynx, QObject *parent) : QObject(parent),
 //    logger.append(points);
 //    logger.append(points);
 //}
+
 void ScopeServer::newDataRecived()
 {
     if (signalInformation.count() < 1)
@@ -347,4 +348,23 @@ LynxList<LynxId> ScopeServer::getIdList()
     }
 
     return temp;
+}
+
+int ScopeServer::getParentIndex(const QString &structname, int signalIndex)
+{
+    int i;
+    //Returns index of parent for checkboxes. If negative value it means that there is a new parent.
+    for (i=0;i<_parentList.count();i++)
+    {
+        if (_parentList.at(i).structName==structname)
+        {
+            qDebug()<<"returning index: "<<i<< " which corr. to the structname: "<<structname;
+            return _parentList.at(i).index;
+        }
+
+    }
+    qDebug()<<"appending new index: "<<signalIndex<< " which corr. to the structname: "<<structname;
+
+    _parentList.append(parentList{signalIndex,structname});
+    return (_parentList.last().index);
 }
