@@ -81,6 +81,8 @@ public slots:
     // Returns the description of the variable pointed to by lynxId. If lynxId points to a struct an empty string is returned
     QString getVariableName(const QtLynxId * lynxId);
 
+    // Attempts to parse value to an appropriate type and sends it via uart
+    void sendVariable(const QtLynxId * lynxId, const QString & value);
     // Returns 0 if lynxId points to a string
     double getValueAsNumber(const QtLynxId * lynxId);
     // Returns any value type as a string
@@ -89,6 +91,8 @@ public slots:
     bool getValueAsBool(const QtLynxId * lynxId);
     // Returns the simplified data type (not init, number, string or bool)
     QtLynxWrapper::QtLynxType getDataType(const QtLynxId * lynxId);
+    // Change deviceId on the remote device
+    void changeRemoteDeviceId(const QString & deviceId);
 };
 
 #endif // QTLYNXWRAPPER_H

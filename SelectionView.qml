@@ -285,7 +285,9 @@ Item {
             MouseArea
             {
                 id: deviceMouseArea
-                anchors.fill: parent
+                height: parent.height/2
+                width: parent.width
+                anchors.bottom: parent.bottom
                 onClicked: deviceListview.currentIndex = index
                 hoverEnabled: true
             }

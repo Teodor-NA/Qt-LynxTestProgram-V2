@@ -9,9 +9,22 @@ MyFrame {
     property string deviceId: "Not set"
     property string structCount: "Not set"
     property string lynxVersion: "Not set"
-    property var fontPixelSize: width/30
+    property var dynFontPixelSize: width/30
+    property var fontPixelSize: 10
+    property var maxFontPixelSize: 15
+    property var minFontPixelSize: 10
     property bool selected: false
     property bool hovered: false
+
+    onDynFontPixelSizeChanged:
+    {
+        if (dynFontPixelSize > maxFontPixelSize)
+            fontPixelSize = maxFontPixelSize
+        else if (dynFontPixelSize < minFontPixelSize)
+            fontPixelSize = minFontPixelSize
+        else
+            fontPixelSize = dynFontPixelSize
+    }
 
     height: column.height
 //    color: selected ? Qt.darker("white", 1.15) : (hovered ? Qt.darker("white", 1.05) : "white")
@@ -40,13 +53,40 @@ MyFrame {
                 fontPixelSize: myFrame.fontPixelSize
             }
 
-            DescriptionText
+            Row
             {
-                descripition: "Device ID:"
-                text: deviceId
                 width: HF.evenWidthSpacing(parent)
-                fontPixelSize: myFrame.fontPixelSize
+                height: children[1].height
+
+                Label
+                {
+                    width: HF.evenWidthSpacing(parent)
+                    text: "Device ID:"
+                    font.pixelSize: myFrame.fontPixelSize
+                    font.bold: true
+                }
+
+                TextInput
+                {
+                    width: HF.evenWidthSpacing(parent)
+                    text: deviceId
+                    font.pixelSize: myFrame.fontPixelSize
+                    onAccepted: lynx.changeRemoteDeviceId(text)
+                    onActiveFocusChanged:
+                    {
+                        if (activeFocus)
+                            selectAll()
+                    }
+                }
             }
+
+//            DescriptionText
+//            {
+//                descripition: "Device ID:"
+//                text: deviceId
+//                width: HF.evenWidthSpacing(parent)
+//                fontPixelSize: myFrame.fontPixelSize
+//            }
         }
 
         Row

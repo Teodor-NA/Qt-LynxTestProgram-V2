@@ -112,7 +112,7 @@ public slots:
     void pullStruct(const QtLynxId * lynxId);
     void startPeriodic(unsigned int interval, const QtLynxId * lynxId); // int structIndex = -1);
     void stopPeriodic(const QtLynxId * lynxId);  // int structIndex = -1);
-    void sendVariable(const QtLynxId * lynxId, const QString & value);// int structIndex, int variableIndex, const QString & value);
+//    void sendVariable(const QtLynxId * lynxId, const QString & value);
     bool uartConnected() { return _uart->opened(); }
     void fullscreenButtonClicked();
 //    void newDataReceived(const QtLynxId * lynxId);

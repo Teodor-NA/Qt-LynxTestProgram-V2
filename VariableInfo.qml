@@ -15,9 +15,22 @@ MyFrame {
     property string variableType: "Not set"
     property var dataType: Lynx.E_NotInit
     // property string variableValue: valueInput.text
-    property var fontPixelSize: width/30
+    property var dynFontPixelSize: width/30
+    property var fontPixelSize: 10
+    property var maxFontPixelSize: 15
+    property var minFontPixelSize: 10
     property bool selected: false
     property bool hovered: false
+
+    onDynFontPixelSizeChanged:
+    {
+        if (dynFontPixelSize > maxFontPixelSize)
+            fontPixelSize = maxFontPixelSize
+        else if (dynFontPixelSize < minFontPixelSize)
+            fontPixelSize = minFontPixelSize
+        else
+            fontPixelSize = dynFontPixelSize
+    }
 
     onValidChanged:
     {
@@ -122,7 +135,7 @@ MyFrame {
                     horizontalAlignment: TextInput.AlignHCenter
                     verticalAlignment: TextInput.AlignVCenter
                     enabled: (myFrame.enableInput && myFrame.valid) // && (myFrame.dataType != Lynx.E_Bool))
-                    onAccepted: backEnd.sendVariable(variableId, text)
+                    onAccepted: lynx.sendVariable(variableId, text)
 
                     MouseArea
                     {
@@ -133,36 +146,17 @@ MyFrame {
                             if (lynx.getValueAsBool(variableId))
                             {
                                 valueInput.text = "False";
-                                backEnd.sendVariable(variableId, "False")
+                                lynx.sendVariable(variableId, "False")
                             }
                             else
                             {
                                 valueInput.text = "True";
-                                backEnd.sendVariable(variableId, "True")
+                                lynx.sendVariable(variableId, "True")
                             }
                         }
                     }
                 }
             }
-
-//            Button
-//            {
-//                id: valueBool
-//                property bool active: lynx.getValueAsBool(variableId)
-//                height: valueFrame.height
-//                width: valueFrame.width
-//                visible: !valueFrame.visible
-//                text: active ? "True" : "False"
-
-//                background:
-//                MyFrame
-//                {
-//                    anchors.fill: parent
-//                    border.color: (myFrame.enableInput && myFrame.valid) ? "black" : "transparent"
-
-//                }
-
-//            }
         }
     }
 }

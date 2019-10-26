@@ -86,6 +86,50 @@ void BackEnd::scan()
 
 void BackEnd::newDeviceInfoReceived(const LynxDeviceInfo & deviceInfo)
 {
+    for (int i = 0; i < _deviceInfoList.count(); i++)
+    {
+        if (_deviceInfoList.at(i).deviceId == deviceInfo.deviceId)
+        {
+            qDebug() << "The deviceId" << deviceInfo.deviceId << "is already in the list";
+
+            bool diff = false;
+
+            if (_deviceInfoList.at(i).structs.count() != deviceInfo.structs.count())
+                diff = true;
+            else
+            {
+                for (int j = 0; j < _deviceInfoList.at(i).structs.count(); j++)
+                {
+                    if (_deviceInfoList.at(i).structs.at(j).variables.count() != deviceInfo.structs.at(j).variables.count())
+                    {
+                        diff = true;
+                        break;
+                    }
+
+                    for (int k = 0; k < _deviceInfoList.at(i).structs.at(j).variables.count(); k++)
+                    {
+                        if (_deviceInfoList.at(i).structs.at(j).variables.at(k).dataType != deviceInfo.structs.at(j).variables.at(k).dataType)
+                        {
+                            diff = true;
+                            break;
+                        }
+                    }
+
+                    if (diff)
+                        break;
+                }
+            }
+
+
+            if (diff)
+                qDebug() << "The signatures are different, so there is most likely a deviceId conflict";
+            else
+                qDebug() << "The signatures are the same, so it is most likely a duplicate scan";
+
+            return;
+        }
+    }
+
     _deviceInfoList.append(deviceInfo);
 
     this->addDevice(
@@ -339,94 +383,6 @@ void BackEnd::stopPeriodic(const QtLynxId * lynxId)
     qDebug() << "Stopping periodic transmit";
     _uart->remotePeriodicStop(lynxId->lynxId());
 }
-
-void BackEnd::sendVariable(const QtLynxId * lynxId, const QString & value)
-{
-    if (lynxId->lynxId().structIndex < 0)
-    {
-        qDebug() << "Struct is not added";
-        return;
-    }
-
-    if (lynxId->lynxId().variableIndex < 0)
-    {
-        qDebug() << "Sending whole struct, value ignored";
-        _uart->send(lynxId->lynxId());
-        return;
-    }
-
-    switch (_lynx->simplifiedType(lynxId->lynxId()))
-    {
-    case LynxLib::eString:
-        qDebug() << "Sending value:" << value;
-        _lynx->setString(value.toLatin1().data(), lynxId->lynxId());
-        _uart->send(lynxId->lynxId());
-        break;
-    case LynxLib::eNumber:
-    {
-        bool parseOk;
-        double tempVal = value.toDouble(&parseOk);
-
-        if (!parseOk)
-        {
-            qDebug() << value << "Could not be converted to a number, nothing will be sent";
-            return;
-        }
-
-        qDebug() << "Sending value:" << tempVal;
-
-        _lynx->setValue(tempVal, lynxId->lynxId());
-        _uart->send(lynxId->lynxId());
-
-    }
-        break;
-    case LynxLib::eBool:
-    {
-        if (value.toLower() == "false")
-        {
-            qDebug() << "Sending value: false";
-            _lynx->setBool(false, lynxId->lynxId());
-            _uart->send(lynxId->lynxId());
-            return;
-        }
-        else if (value.toLower() == "true")
-        {
-            qDebug() << "Sending value: true";
-            _lynx->setBool(true, lynxId->lynxId());
-            _uart->send(lynxId->lynxId());
-            return;
-        }
-
-        bool parseOk;
-        double tempVal = value.toDouble(&parseOk);
-
-        if (!parseOk)
-        {
-            qDebug() << value << "Could not be converted to a number or boolean value, nothing will be sent";
-            return;
-        }
-
-        if (tempVal == 0.0)
-        {
-            qDebug() << "Sending value: false";
-            _lynx->setBool(false, lynxId->lynxId());
-        }
-        else
-        {
-            qDebug() << "Sending value: true";
-            _lynx->setBool(true, lynxId->lynxId());
-        }
-
-        _uart->send(lynxId->lynxId());
-
-    }
-        break;
-    default:
-        qDebug() << "Error: type not found";
-        return;
-    }
-}
-
 
 //LynxId BackEnd::findStructId(int variableIndex)
 //{
