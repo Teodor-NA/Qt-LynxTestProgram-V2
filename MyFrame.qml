@@ -2,7 +2,7 @@ import QtQuick 2.0
 
 Rectangle
 {
-    radius: 20
+    radius: 5
     border.color: "black"
     border.width: 2
 
