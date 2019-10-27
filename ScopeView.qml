@@ -52,122 +52,6 @@ Item {
         height: parent.height
         width: parent.width*0.1
 
-//        Column
-//        {
-//            id: column
-//            // height: parent.height
-//            anchors.fill: parent
-//            ButtonGroup
-//            {
-//                id: childGroup
-//                exclusive: false
-//                checkState: parentBox.checkState
-//            }
-//            ButtonGroup
-//            {
-//                id: childGroup2
-//                exclusive: false
-//                checkState: parentBox2.checkState
-//            }
-////            ButtonGroup
-////            {
-////                id: childGroup2
-////                exclusive: false
-////                checkState: parentBox.checkState
-////            }
-////            ButtonGroup
-////            {
-////                id: childGroup3
-////                exclusive: false
-////                checkState: parentBox.checkState
-////            }
-//            CheckBox
-//            {
-//                id: parentBox
-//                text: qsTr("Parent")
-//                checkState: childGroup.checkState
-//            }
-//            CheckBox
-//            {
-//                id: parentBox2
-//                text: qsTr("Parent")
-//                checkState: childGroup2.checkState
-//            }
-
-//            ListView
-//            {
-//                id:listViewer
-//                model: listCheckModel
-//                delegate: myCheckDelegate
-//                width: 200
-//                height: parent.height-parentBox.height*5
-////                 anchors.top: parentBox.bottom
-
-////                anchors.topMargin: 0
-////                anchors.bottom: parent.bottom
-////                anchors.bottomMargin: 0
-//            }
-
-//            ListModel
-//            {
-//                id: listCheckModel
-//            }
-//            Component
-//            {
-//                id:myCheckDelegate
-////                ButtonGroup
-////                {
-////                    id: group
-////                    exclusive: false
-////                    checkState: box.checkState
-////                }
-//                CheckBox
-//                {
-
-//                    id:box
-//                    checkState: chst
-//                    checked: true
-//                    text: name
-//                    property var varindex: varindexin
-//                    property string seriesColor: seriesColorIn
-//                    property var chst :Qt.Unchecked
-//                    leftPadding: indicator.width
-//                    ButtonGroup.group: buttonGroup
-
-//                    indicator: Rectangle
-//                                {
-//                                    x:width
-//                                    anchors.verticalCenter: parent.verticalCenter
-//                                    implicitWidth: 30
-//                                    implicitHeight: 30
-//                                    radius: 1
-//                                    border.color: activeFocus ? "darkblue" : "gray"
-//                                    border.width: 1
-//                                    Rectangle {
-//                                        visible: checked
-//                                        color: seriesColor
-//                                        border.color: "#333"
-//                                        radius: 2
-//                                        anchors.margins: 4
-//                                        anchors.fill: parent
-//                                    }
-
-//                                }
-//                    onCheckedChanged:
-//                    {
-//                        console.log("index is: "+varindex)
-//                        if(checked && index>=0)
-//                        {
-//                            chartView.series(index).visible=true
-//                        }
-//                        else if(!checked && index>=0)
-//                        {
-//                            chartView.series(index).visible=false
-//                        }
-//                    }
-//                }
-//            }
-//        }//colum
         Column
         {
             id: column
@@ -200,7 +84,7 @@ Item {
                     property bool isParent: isParentIn
                     property var index: indexIn
                     property bool ch: chIn
-                    property var varindex: varindexin
+                    //property var varindex: varindexin
                     //property var xpos: xposIn
                     checked: ch
                     leftPadding: xPos
@@ -229,14 +113,15 @@ Item {
                     {
 
                         scopeServer.updateList(index,isParent,checked)
-                        if(checked && varindex>=0)
-                        {
-                            chartView.series(varindex).visible=true
-                        }
-                        else if(!checked && varindex>=0)
-                        {
-                            chartView.series(varindex).visible=false
-                        }
+
+//                        if(checked && varindex>=0)
+//                        {
+//                            chartView.series(varindex).visible=true
+//                        }
+//                        else if(!checked && varindex>=0)
+//                        {
+//                            chartView.series(varindex).visible=false
+//                        }
                     }
                     onClicked:
                     {
@@ -469,6 +354,7 @@ Item {
             onUpdateChild:{
                 console.log("function onChildUpdate("+check+")")
                 listCheckModel.get(childIndex ).chIn=check}
+            onUpdateVisibility:chartView.series(signalIndex).visible=scopeServer.signalIsVisible(signalIndex);
         }
     }//ChartView
     function screenShot()
@@ -548,15 +434,15 @@ Item {
                 listCheckModel.append({
                                          name:scopeServer.getStructName(n),
                                          chIn:true,
-                                          varindexin:-1,
+                                          //varindexin:-1,
                                          seriesColorIn:series1.color.toString(),
                                          useTristate:false,
                                          isParentIn:true,
                                           indexIn:index,
-                                          xPos:0
+                                          xPos:5
 
                                         })
-                scopeServer.appendList(index,parentIndex,true,true)
+                scopeServer.appendList(index,parentIndex,true,true,n)
                 index++;
             }
 
@@ -564,14 +450,14 @@ Item {
                 listCheckModel.append({
                                          name:scopeServer.getSignalText(n),
                                          chIn:true,
-                                         varindexin:n,
+                                         //varindexin:n,
                                           seriesColorIn:series1.color.toString(),
                                          useTristate:false,
                                          isParentIn:false,
                                           indexIn:index,
                                           xPos:30
                                      })
-                scopeServer.appendList(index,parentIndex,false,true)
+                scopeServer.appendList(index,parentIndex,false,true,n)
                 index++;
 
 
@@ -585,6 +471,7 @@ Item {
         for(var n = 0; n < scopeServer.getNumberOfSignals(); n++)
         {
             scopeServer.update(chartView.series(n), n);
+
         }
 
         if(!chartView.isZoomed())

@@ -8,7 +8,7 @@
 #include <QList>
 #include <QAbstractSeries>
 #include "LynxStructure.h"
-
+#include "qtlynxwrapper.h"
 struct LoggerInfo
 {
     int index;      // Index of logger list
@@ -16,6 +16,8 @@ struct LoggerInfo
     QString name;   // Name of signal
     QString unit;   // Optional: signal unit
     QString color;  // Chart color if needed
+    bool visibility;// Signal is visible in the chart
+    QString structName;
 };
 struct checkboxList
 {
@@ -23,6 +25,7 @@ struct checkboxList
     int parentIndex;
     bool parent;
     bool checked;
+    int varIndex;
 };
 struct parentList
 {
@@ -55,6 +58,7 @@ public:
     explicit ScopeServer(LynxManager * lynx, QObject *parent = nullptr);
 
 signals:
+    void updateVisibility(int signalIndex);
     void reScale();
     void refreshChart(); 
     void createSeries();
@@ -63,6 +67,8 @@ signals:
     void updateChild(int childIndex,bool check);
 
 public slots:
+    void updateChart();
+    bool signalIsVisible(int signalIndex) { return signalInformation.at(signalIndex).visibility;}
     void clearParents()
     {
         _checkBoxList.clear();
@@ -73,85 +79,44 @@ public slots:
         if(parent)
             return;
         _checkBoxList[index].checked = checked;
+        signalInformation[_checkBoxList.at(index).varIndex].visibility = checked;
+        emit updateVisibility(_checkBoxList.at(index).varIndex);
         qDebug()<<" -List updated, index: "<<index<<" has checkstate: "<<checked;
     }
-    void checkIt(int index,bool parent,bool checked)
+    void checkIt(int index,bool parent,bool checked);
+
+    void appendList(int index,int parentIndex,bool parent,bool checked,int varIndex)
     {
-        _checkBoxList[index].checked = checked;
-        qDebug()<<"function checkIt()";
-        int nTrue = 0;
-        int nFalse = 0;
-        qDebug()<<"index is: "<<index<<" and is parentIndex is: "<<_checkBoxList.at(index).parentIndex << " while checked is: "<<checked;
-         qDebug()<<"";
-        //qDebug()<<"count is: "<<_checkBoxList.count();
-        if(parent)
-        {
-            //qDebug()<<"click is a parent and checked is:"<<checked;
-            for (int n=0;n<_checkBoxList.count();n++)
-            {
-                if(_checkBoxList.at(n).parentIndex==_checkBoxList.at(index).parentIndex)
-                {
-                    //qDebug()<<"setting child index: "<<n <<"with checked"<<checked;
-                    emit updateChild(n,checked);
-                    emit updateChild(n,!checked);
-                    emit updateChild(n,checked);
-                }
-            }
-        }
-        else //child
-        {
-            for (int i=0;i<_checkBoxList.count();i++)
-            {
-
-                if(_checkBoxList.at(i).parentIndex == _checkBoxList.at(index).parentIndex && i!=_checkBoxList.at(index).parentIndex)
-                {
-                    _checkBoxList.at(i).checked ? nTrue++ : nFalse++;
-                }
-            }
-
-            if(nTrue==0)
-                 emit setParent(_checkBoxList.at(index).parentIndex,false);
-            else
-                emit setParent(_checkBoxList.at(index).parentIndex,true);
-
-        }
-    }
-    void appendList(int index,int parentIndex,bool parent,bool checked)
-    {
-        _checkBoxList.append(checkboxList{index,parentIndex,parent,checked});
+        _checkBoxList.append(checkboxList{index,parentIndex,parent,checked,varIndex});
         qDebug()<<"appended parent:"<<parent<<" with " <<index<<" with parent index: "<<parentIndex << " while checked is: "<<checked;
 
     }
     LynxList<LynxId> getIdList();
     int getParentIndex(const QString &structname,int signalIndex);
-    QString getStructName(int index) { return QString(_lynx->getStructName(signalInformation.at(index).id));}
+    QString getStructName(int index)
+    {
+        if(_historicData)
+            return signalInformation.at(index).structName;
+        else
+            return QString(_lynx->getStructName(signalInformation.at(index).id));
+
+    }
     void resumeRealtime()
     {
-        // logger.clear();
-        // signalInformation.clear();
-        // createDemo();
         emit createSeries();
-        // _haltLogging = false;
         _haltChartRefresh = false;
     }
+
     // Return the number of signals that should be logged
     int getNumberOfSignals() { return signalInformation.count(); }
 
     // Updates the logger list function
-    void newDataRecived();//For demo
+    void newDataRecived(const QtLynxId *id);
+
     void writeToCSV(const QString  &filepath);
     void readFromCSV(const QString & filepath);
     // Starts the chartview refresh emit
-    void resumeChartviewRefresh()
-    {
-        // if(!_seriesCreated)
-        // {
-        //     return;
-        //     // _seriesCreated = true;
-        //     // emit createSeries();
-        // }
-        _haltChartRefresh = false;
-    }
+    void resumeChartviewRefresh() { _haltChartRefresh = false; }
 
     // Stops the chartview refresh emit and store the current x axis values
     void pauseChartviewRefresh()
@@ -160,33 +125,9 @@ public slots:
         xFirstPause=getFirstX();
         _haltChartRefresh = true;
     }
+
     //
     void calcAxisIndex(qint64 msMin, qint64 msMax);
-//    {
-//        //int n=0;
-//        int firstIndex=0,secondIndex=0;
-//        for (int i = (logger[0].count() - 1); i>=0; i--)
-//        {
-//            if(abs(qint64(logger[0].at(i).x())-msMin)<10 && !firstIndex)
-//            {
-//                firstIndex=i;
-//            }
-//            else if (abs(qint64(logger[0].at(i).x())-msMax)<10 && !secondIndex)
-//            {
-//                secondIndex=i;
-//            }
-//            if(firstIndex && secondIndex)
-//                break;
-//        }
-//        qDebug()<<"first index found: "<<firstIndex;
-//        qDebug()<<"second index found: "<<secondIndex;
-//        _firstIndex = firstIndex;
-//        _secondIndex = secondIndex;
-
-
-//    }
-    // Get frame min max
-    // void calcMinMaxY();
 
     // Enable the logger append
     void resumeLogging(){_haltLogging = false;_historicData=false;}
@@ -205,8 +146,10 @@ public slots:
 
     // Returns the min Y axis
     double getFrameMinY() { return frameMin; }
+
     // Resets the min and max Y axis
     void resetY() { max = 0; min = 0; }
+
     // Get the first Xaxis data. Dependant on realtime or history logging
 
     qint64 getFirstX()
@@ -225,9 +168,14 @@ public slots:
         else
             return qint64(logger.at(0).last().x());
     }
+
+    // Update the chart series with new data
     void update(QAbstractSeries *series,int index);
-    // Get signalText
+
+    // Returns the signal name
     const QString getSignalText(int index) { return signalInformation.at(index).name; }
+
+    // Returns the signal color
     const QString getSignalColor(int index) { return signalInformation.at(index).color; }
 
     int changePlotItem(int structIndex, int variableIndex, bool checked);

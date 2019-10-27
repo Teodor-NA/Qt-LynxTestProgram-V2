@@ -174,7 +174,7 @@ Item
                     property bool enabled: false
                     property bool resumeRealTimer: false
                     visible: topRibbon.graphButtonsVisible
-                    filename: "icons8-play-50"
+                    filename: "icons8-pause-50"
                     tooltip: "Live view"
                     onClicked:{
                         if(resumeRealTimer)
@@ -186,13 +186,13 @@ Item
 
                         else if (enabled){
                             enabled = false
-                            filename = "icons8-play-50"
-                            scopeServer.pauseChartviewRefresh();
+                            filename = "icons8-pause-50"
+                            scopeServer.resumeChartviewRefresh();
                         }
                         else{
                             enabled = true
-                            filename = "icons8-pause-50"
-                            scopeServer.resumeChartviewRefresh();
+                            filename = "icons8-play-50"
+                            scopeServer.pauseChartviewRefresh();
                         }
                     }
                 }
@@ -285,10 +285,6 @@ Item
                 {
                     id: scopeView
                     anchors.fill: parent
-//                    anchors.right:  parent.right
-//                    anchors.verticalCenter: parent.verticalCenter
-//                    height: parent.height
-//                    width: parent.width*0.8
                 }
             }
 
@@ -299,21 +295,19 @@ Item
             id: tabBar
             width: parent.width
             currentIndex: swipeWindow.currentIndex
-//            onCurrentIndexChanged:
-//            {
-//                switch (currentIndex)
-//                {
-//                case 0:
-//                    topRibbon.selectButtonsVisible = true
-//                    topRibbon.graphButtonsVisible = false
-//                    break
-//                case 1:
-//                    topRibbon.selectButtonsVisible = false
-//                    topRibbon.graphButtonsVisible = true
-//                    break
+            onCurrentIndexChanged:
+            {
+                switch (currentIndex)
+                {
+                case 0:// Selection Window
+                    scopeServer.pauseChartviewRefresh();
+                    break
+                case 1:// Graph Window
+                    scopeServer.resumeChartviewRefresh();
+                    break
 
-//                }
-//            }
+                }
+            }
 
             TabButton
             {
