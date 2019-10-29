@@ -49,6 +49,9 @@ MyFrame {
         target: lynx
         onNewDataReceived:
         {
+            if (valueInput.activeFocus)
+                return;
+
             if (lynxId.structIndex === variableId.structIndex)
                 if ((lynxId.variableIndex < 0) || (lynxId.variableIndex === variableId.variableIndex))
                     valueInput.text = lynx.getValueAsString(variableId)
@@ -135,7 +138,17 @@ MyFrame {
                     horizontalAlignment: TextInput.AlignHCenter
                     verticalAlignment: TextInput.AlignVCenter
                     enabled: (myFrame.enableInput && myFrame.valid) // && (myFrame.dataType != Lynx.E_Bool))
-                    onAccepted: lynx.sendVariable(variableId, text)
+                    onAccepted:
+                    {
+                        lynx.sendVariable(variableId, text)
+                        focus = false
+                    }
+
+                    Keys.onPressed:
+                    {
+                        if (event.key === Qt.Key_Escape)
+                            focus = false
+                    }
 
                     MouseArea
                     {

@@ -57,15 +57,15 @@ class BackEnd : public QObject
     Q_PROPERTY(int structInfoIndex MEMBER _structInfoIndex NOTIFY structInfoIndexChanged)
 
     LynxManager * const _lynx;
-    LynxUartQt * const _uart;
+//    LynxUartQt * const _uart;
 
 
     // LynxInfo _receiveInfo;
 
-    QList<QSerialPortInfo> _portList;
-    QSerialPortInfo _selectedPort;
+//    QList<QSerialPortInfo> _portList;
+//    QSerialPortInfo _selectedPort;
 
-    unsigned long _baudrate = 115200;
+//    unsigned long _baudrate = 115200;
 
     LynxList<LynxDeviceInfo> _deviceInfoList;
 
@@ -82,12 +82,12 @@ class BackEnd : public QObject
     // LynxId findStructId(int variableIndex = -1);
 
 public:
-    explicit BackEnd(LynxManager * const lynx, LynxUartQt * const uart, QObject *parent = nullptr);
+    explicit BackEnd(LynxManager * const lynx, QObject *parent = nullptr);
     // ~BackEnd() {}
 
 signals:
-    void clearPortList();
-    void addPort(const QString & portName);
+//    void clearPortList();
+//    void addPort(const QString & portName);
     void clearDevices();
     void addDevice(const QString & description, const QString & id, const QString & version, const QString & count);
     void clearStructList();
@@ -102,10 +102,10 @@ signals:
     LynxList<LynxId> getIdList();
 
 public slots:
-    void scan();
-    void refreshPortList();
-    void portSelected(int portIndex);
-    void connectButtonClicked();
+//    void scan();
+//    void refreshPortList();
+//    void portSelected(int portIndex);
+//    void connectButtonClicked();
     void selectDevice(); //int infoIndex);
     void selectStruct(); //int infoIndex);
     int generateStruct();
@@ -113,7 +113,7 @@ public slots:
     void startPeriodic(unsigned int interval, const QtLynxId * lynxId); // int structIndex = -1);
     void stopPeriodic(const QtLynxId * lynxId);  // int structIndex = -1);
 //    void sendVariable(const QtLynxId * lynxId, const QString & value);
-    bool uartConnected() { return _uart->opened(); }
+//    bool uartConnected() { return _uart->opened(); }
     void fullscreenButtonClicked();
 //    void newDataReceived(const QtLynxId * lynxId);
     void newDeviceInfoReceived(const LynxDeviceInfo & deviceInfo);

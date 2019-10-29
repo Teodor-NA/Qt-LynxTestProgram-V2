@@ -1,9 +1,9 @@
 #include "backend.h"
 
-BackEnd::BackEnd(LynxManager * const lynx, LynxUartQt * const uart, QObject *parent) :
+BackEnd::BackEnd(LynxManager * const lynx, QObject *parent) :
     QObject(parent),
-    _lynx(lynx),
-    _uart(uart)
+    _lynx(lynx)
+    // _uart(uart)
 {
    //  _uart.open(4, 115200);
 
@@ -14,13 +14,13 @@ BackEnd::BackEnd(LynxManager * const lynx, LynxUartQt * const uart, QObject *par
 
 }
 
-void BackEnd::scan()
-{
-    qDebug() << "\n------------ Sending Scan -------------\n";
-    _uart->scan();
-    // this->clearDevices();
-    // this->addDevice("desc");
-}
+//void BackEnd::scan()
+//{
+//    qDebug() << "\n------------ Sending Scan -------------\n";
+//    _uart->scan();
+//    // this->clearDevices();
+//    // this->addDevice("desc");
+//}
 
 //void BackEnd::newDataReceived(QtLynxId * lynxId)
 //{
@@ -140,54 +140,54 @@ void BackEnd::newDeviceInfoReceived(const LynxDeviceInfo & deviceInfo)
     );
 }
 
-void BackEnd::refreshPortList()
-{
-    this->clearPortList();
-    this->addPort("Select port");
+//void BackEnd::refreshPortList()
+//{
+//    this->clearPortList();
+//    this->addPort("Select port");
 
-    _portList = QSerialPortInfo::availablePorts();
+//    _portList = QSerialPortInfo::availablePorts();
 
-    QString tempName;
-    for (int i = 0; i < _portList.count(); i++)
-    {
-        tempName = _portList.at(i).portName();
-        tempName += " - ";
-        tempName += _portList.at(i).description();
+//    QString tempName;
+//    for (int i = 0; i < _portList.count(); i++)
+//    {
+//        tempName = _portList.at(i).portName();
+//        tempName += " - ";
+//        tempName += _portList.at(i).description();
 
-        if (!_portList.at(i).isNull())
-            this->addPort(tempName);
-    }
-}
+//        if (!_portList.at(i).isNull())
+//            this->addPort(tempName);
+//    }
+//}
 
-void BackEnd::portSelected(int portIndex)
-{
-    qDebug() << "Port selsected";
-    qDebug() << "Index: " << portIndex;
-    if ((portIndex < 0) || (portIndex >= _portList.count()))
-        return;
+//void BackEnd::portSelected(int portIndex)
+//{
+//    qDebug() << "Port selsected";
+//    qDebug() << "Index: " << portIndex;
+//    if ((portIndex < 0) || (portIndex >= _portList.count()))
+//        return;
 
-    _selectedPort = _portList.at(portIndex);
-}
+//    _selectedPort = _portList.at(portIndex);
+//}
 
-void BackEnd::connectButtonClicked()
-{
-    // qDebug() << "Button clicked";
-    if (_uart->opened())
-    {
-        qDebug() << "Closing port";
-        _uart->close();
-    }
-    else
-    {
-        qDebug() << "Attempting to open";
-        qDebug() << _selectedPort.portName();
-        qDebug() << _selectedPort.description();
-        if (_uart->open(_selectedPort, _baudrate))
-            qDebug() << "Opened successfully";
-        else
-            qDebug() << "Open failed";
-    }
-}
+//void BackEnd::connectButtonClicked()
+//{
+//    // qDebug() << "Button clicked";
+//    if (_uart->opened())
+//    {
+//        qDebug() << "Closing port";
+//        _uart->close();
+//    }
+//    else
+//    {
+//        qDebug() << "Attempting to open";
+//        qDebug() << _selectedPort.portName();
+//        qDebug() << _selectedPort.description();
+//        if (_uart->open(_selectedPort, _baudrate))
+//            qDebug() << "Opened successfully";
+//        else
+//            qDebug() << "Open failed";
+//    }
+//}
 
 void BackEnd::selectDevice() //int infoIndex)
 {
@@ -339,7 +339,7 @@ int BackEnd::generateStruct()
     qDebug() << "Struct was succesfully added, new index:" << (_dynamicIds.count() - 1);
 
     // Pull the datagram to update the values
-    _uart->pullDatagram(_dynamicIds.last().structLynxId);
+    // _uart->pullDatagram(_dynamicIds.last().structLynxId);
 
     return (_dynamicIds.count() - 1);
 }
@@ -353,7 +353,7 @@ void BackEnd::pullStruct(const QtLynxId * lynxId)
     }
 
     qDebug() << "Pulling datagram with structIndex:" << lynxId->lynxId().structIndex << "and variableIndex:" << lynxId->lynxId().variableIndex;
-    _uart->pullDatagram(lynxId->lynxId());
+    // _uart->pullDatagram(lynxId->lynxId());
 }
 
 void BackEnd::startPeriodic(unsigned int interval, const QtLynxId * lynxId)
@@ -367,7 +367,7 @@ void BackEnd::startPeriodic(unsigned int interval, const QtLynxId * lynxId)
     }
 
     qDebug() << "Starting periodic transmit at:" << interval << "ms interval";
-    _uart->remotePeriodicStart(lynxId->lynxId(), interval);
+    // _uart->remotePeriodicStart(lynxId->lynxId(), interval);
 }
 
 void BackEnd::stopPeriodic(const QtLynxId * lynxId)
@@ -381,7 +381,7 @@ void BackEnd::stopPeriodic(const QtLynxId * lynxId)
     }
 
     qDebug() << "Stopping periodic transmit";
-    _uart->remotePeriodicStop(lynxId->lynxId());
+    // _uart->remotePeriodicStop(lynxId->lynxId());
 }
 
 //LynxId BackEnd::findStructId(int variableIndex)

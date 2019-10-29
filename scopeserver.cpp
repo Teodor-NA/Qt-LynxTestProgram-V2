@@ -132,6 +132,13 @@ void ScopeServer::calcAxisIndex(qint64 msMin, qint64 msMax)
     qDebug() << "Max value: " << maxValue;
     qDebug() << "Min value: " << minValue;
 
+    if (minValue == maxValue)
+    {
+        qDebug() << "Min and max is the same, adding 0.5 as margin.";
+        minValue -= 0.5;
+        maxValue += 0.5;
+    }
+
     frameMin = minValue;
     frameMax = maxValue;
 

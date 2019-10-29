@@ -12,9 +12,9 @@ Item
     anchors.fill: parent
     Connections
     {
-        target: backEnd
-        onAddPort: portListModel.append({ text: portName })
-        onClearPortList: portListModel.clear()
+        target: lynx
+        onAddPort: portListModel.append({ text: port })
+        onClearPortList: { portListModel.clear(); portListModel.append({ text: "Select port" })}
     }
 
     Connections
@@ -66,13 +66,14 @@ Item
                     {
                         if(pressed)
                         {
-                            backEnd.refreshPortList()
+                            // backEnd.refreshPortList()
+                            lynx.scanForUart()
                             portComboBox.currentIndex = 0
                         }
                     }
                     onCurrentIndexChanged:
                     {
-                        backEnd.portSelected(currentIndex - 1)
+                        lynx.selectPort(currentIndex - 1)
                     }
 
                     ToolTip.delay: 500
@@ -87,26 +88,11 @@ Item
                     id: connectButton
                     visible: topRibbon.selectButtonsVisible
                     enabled: portComboBox.currentIndex > 0
-                    filename: "icons8-disconnected-50"
-                    tooltip: "Connect"
+                    filename: lynx.uartConnected ? "icons8-connected-50" : "icons8-disconnected-50"
+                    tooltip: lynx.uartConnected ? "Disconnect" : "Connect"
                     onClicked:
                     {
-                        if (backEnd.uartConnected())
-                        {
-                            filename = "icons8-disconnected-50"
-                            tooltip = "Connect"
-                            portComboBox.enabled = true
-                            scanButton.enabled = false
-                        }
-                        else
-                        {
-                            filename = "icons8-connected-50"
-                            tooltip = "Disonnect"
-                            portComboBox.enabled = false
-                            scanButton.enabled = true
-                        }
-
-                        backEnd.connectButtonClicked();
+                        lynx.connectButtonClicked();
                     }
 
                 }
@@ -117,7 +103,7 @@ Item
                     visible: topRibbon.selectButtonsVisible
                     filename:"icons8-update-left-rotation-50"
                     tooltip: "Scan for devices"
-                    enabled: false
+                    enabled: lynx.uartConnected
                     onClicked: backEnd.scan()
                 }
 

@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     QQuickView viewer;
 
     QtLynxWrapper lynx(&viewer);
-    BackEnd backEnd(lynx.lynxPointer(), lynx.lynxUartPointer(), &viewer);
+    BackEnd backEnd(lynx.lynxPointer(), &viewer);
     ScopeServer scopeServer(lynx.lynxPointer(), &viewer);
 
     viewer.rootContext()->setContextProperty("lynx", &lynx);
