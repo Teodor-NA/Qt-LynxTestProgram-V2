@@ -35,6 +35,7 @@ import QtQuick.Controls.Styles 1.4
 //![1]
 Item {
     id: chartItem
+
     //property var setMaxAxis: 0
     //property var setMinAxis: 0
     //property bool openGL: true
@@ -44,13 +45,14 @@ Item {
     property var xaxis_max: new Date()
     //property var nMin : 1
     property var deltaX :10000 //10*1000ms delta time
-    //property var offsetFromCurrentTime: 0
+    property var offsetFromCurrentTime: 0
     Rectangle // Shows the checkboxes
     {
         // anchors.left: parent.left
         //anchors.verticalCenter: parent.verticalCenter
         height: parent.height
         width: parent.width*0.1
+        id:sideRectangle
 
         Column
         {
@@ -78,7 +80,8 @@ Item {
                 {
                     id:box
 
-                    text: name
+                    //text: name
+
                     //property var varindex: varindexin
                     property string seriesColor: seriesColorIn
                     property bool isParent: isParentIn
@@ -106,7 +109,18 @@ Item {
                                         radius: 2
                                         anchors.margins: 4
                                         anchors.fill: parent
+                                        Text {
+                                            id: checkBoxText
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            anchors.left: parent.right
+                                            anchors.leftMargin: 10
+                                            text: name
+                                            width: 70
+                                            wrapMode: Text.WordWrap
+                                            font.pixelSize: 12
+                                        }
                                     }
+
 
                                 }
                     onCheckedChanged:
@@ -140,9 +154,9 @@ Item {
         width: parent.width*0.9
         anchors.right: parent.right
         animationOptions: ChartView.SeriesAnimations //NoAnimation
-        theme: ChartView.ChartThemeLight
-        antialiasing: true
+        theme: ChartView.ChartThemeDark
 
+        antialiasing: true
         legend.visible: false
         legend.font.pixelSize: 15
 
@@ -370,6 +384,20 @@ Item {
                 console.log("Screenshot failed");
         });
 
+    }
+    function changeView(mode)
+    {
+        if(mode)
+        {
+            chartView.theme=ChartView.ChartThemeDark
+            sideRectangle.color = Qt.rgba(0.173228,0.183,0.21653543307,1)
+        }
+        else
+        {
+            sideRectangle.color = "white"
+
+            chartView.theme=ChartView.ChartThemeLight
+        }
     }
 
     function resizeHorizontal()
