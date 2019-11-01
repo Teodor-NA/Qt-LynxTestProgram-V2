@@ -22,6 +22,7 @@ SOURCES += \
         "../LynxStructure/lynxlistclasses.cpp" \
         backend.cpp \
         main.cpp \
+        qtlynxuartwrapper.cpp \
         qtlynxwrapper.cpp \
         scopeserver.cpp
 
@@ -45,6 +46,7 @@ HEADERS += \
     "../LynxStructure/lynxlistclasses.h" \
     # "../LynxStructure/teststruct.h" \
     backend.h \
+    qtlynxuartwrapper.h \
     qtlynxwrapper.h \
     scopeserver.h
 

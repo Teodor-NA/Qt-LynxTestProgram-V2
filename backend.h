@@ -53,6 +53,7 @@ class BackEnd : public QObject
     Q_OBJECT
 
     Q_PROPERTY(bool fullscreen MEMBER _fullscreen NOTIFY fullscreenChanged)
+    // Q_PROPERTY(int portIndex MEMBER _portIndex NOTIFY portIndexChanged)
     Q_PROPERTY(int deviceInfoIndex MEMBER _deviceInfoIndex NOTIFY deviceInfoIndexChanged)
     Q_PROPERTY(int structInfoIndex MEMBER _structInfoIndex NOTIFY structInfoIndexChanged)
 
@@ -71,6 +72,7 @@ class BackEnd : public QObject
 
     int _deviceInfoIndex;
     int _structInfoIndex;
+    // int _portIndex;
 
     LynxList<LynxDynamicId> _dynamicIds;
     // LynxList<AddedStruct> _addedStructs;
@@ -89,36 +91,45 @@ signals:
 //    void clearPortList();
 //    void addPort(const QString & portName);
     void clearDevices();
-    void addDevice(const QString & description, const QString & id, const QString & version, const QString & count);
+    void addDevice(const QString & description, const QString & id, const QString & version, const QString & count, int portIndex);
     void clearStructList();
-    void addStruct(const QString & structName, const QString & structId, const QString & variableCount);
+    void addStruct(const QString & structName, const QString & structId, const QString & variableCount, int portIndex);
     void addStructIndex(int structIndex);
     void clearVariableList();
-    void addVariable(const QString & variableName, int variableIndex, const QString & variableType, const QString & variableValue, bool enableInput, bool checked);
+    void addVariable
+    (
+        const QString & variableName,
+        int variableIndex,
+        const QString & variableType,
+        const QString & variableValue,
+        bool enableInput,
+        bool checked,
+        int portIndex
+    );
 //    void changeVariableValue(QtLynxId * lynxId, const QString & value); // (int structIndex, int variableIndex, const QString & value);
     void fullscreenChanged();
     void deviceInfoIndexChanged();
     void structInfoIndexChanged();
+    //void portIndexChanged();
     LynxList<LynxId> getIdList();
+    void changeDeviceId(QString newDeviceId);
 
 public slots:
 //    void scan();
 //    void refreshPortList();
 //    void portSelected(int portIndex);
 //    void connectButtonClicked();
-    void selectDevice(); //int infoIndex);
-    void selectStruct(); //int infoIndex);
+    void selectDevice(int portIndex); //int infoIndex);
+    void selectStruct(int portIndex); //int infoIndex);
     int generateStruct();
-    void pullStruct(const QtLynxId * lynxId);
-    void startPeriodic(unsigned int interval, const QtLynxId * lynxId); // int structIndex = -1);
-    void stopPeriodic(const QtLynxId * lynxId);  // int structIndex = -1);
 //    void sendVariable(const QtLynxId * lynxId, const QString & value);
 //    bool uartConnected() { return _uart->opened(); }
     void fullscreenButtonClicked();
 //    void newDataReceived(const QtLynxId * lynxId);
-    void newDeviceInfoReceived(const LynxDeviceInfo & deviceInfo);
+    void newDeviceInfoReceived(const LynxDeviceInfo & deviceInfo, int portIndex);
     // int changePlotItem(int structIndex, int variableIndex, const QString & name, bool checked);
     // void sendData(int structIndex, int variableIndex);
+    void changeLocalDeviceId(char oldId, char newId);
 
 };
 

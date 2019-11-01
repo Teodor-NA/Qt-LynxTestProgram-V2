@@ -84,7 +84,7 @@ BackEnd::BackEnd(LynxManager * const lynx, QObject *parent) :
 
 //}
 
-void BackEnd::newDeviceInfoReceived(const LynxDeviceInfo & deviceInfo)
+void BackEnd::newDeviceInfoReceived(const LynxDeviceInfo & deviceInfo, int portIndex)
 {
     for (int i = 0; i < _deviceInfoList.count(); i++)
     {
@@ -134,9 +134,10 @@ void BackEnd::newDeviceInfoReceived(const LynxDeviceInfo & deviceInfo)
 
     this->addDevice(
                 QString(_deviceInfoList.last().description),
-                QString::asprintf("0x%x", _deviceInfoList.last().deviceId),
+                QString::asprintf("0x%x", (int(_deviceInfoList.last().deviceId) & 0xff)),
                 QString(_deviceInfoList.last().lynxVersion),
-                QString::number(_deviceInfoList.last().structCount)
+                QString::number(_deviceInfoList.last().structCount),
+                portIndex
     );
 }
 
@@ -189,7 +190,7 @@ void BackEnd::newDeviceInfoReceived(const LynxDeviceInfo & deviceInfo)
 //    }
 //}
 
-void BackEnd::selectDevice() //int infoIndex)
+void BackEnd::selectDevice(int portIndex) //int infoIndex)
 {
     qDebug() << "deviceIndex:" << _deviceInfoIndex;
 
@@ -206,13 +207,14 @@ void BackEnd::selectDevice() //int infoIndex)
             this->addStruct(
                 QString(_deviceInfoList.at(_deviceInfoIndex).structs.at(i).description),
                 QString::asprintf("0x%x", _deviceInfoList.at(_deviceInfoIndex).structs.at(i).structId),
-                QString::number(_deviceInfoList.at(_deviceInfoIndex).structs.at(i).variableCount)
+                QString::number(_deviceInfoList.at(_deviceInfoIndex).structs.at(i).variableCount),
+                portIndex
             );
         }
     }
 }
 
-void BackEnd::selectStruct() // int infoIndex)
+void BackEnd::selectStruct(int portIndex) // int infoIndex)
 {
     qDebug() << "structIndex:" << _structInfoIndex;
 
@@ -300,7 +302,8 @@ void BackEnd::selectStruct() // int infoIndex)
                 QString(LynxTextList::lynxDataType(_deviceInfoList.at(_deviceInfoIndex).structs.at(_structInfoIndex).variables.at(i).dataType)),
                 data,
                 (LynxLib::accessMode(_deviceInfoList.at(_deviceInfoIndex).structs.at(_structInfoIndex).variables.at(i).dataType) == LynxLib::eReadWrite),
-                checked
+                checked,
+                portIndex
             );
         }
     }
@@ -344,45 +347,7 @@ int BackEnd::generateStruct()
     return (_dynamicIds.count() - 1);
 }
 
-void BackEnd::pullStruct(const QtLynxId * lynxId)
-{
-    if (lynxId->lynxId().structIndex < 0)
-    {
-        qDebug() << "Could not find datagram. Did you remember to add the struct?";
-        return;
-    }
 
-    qDebug() << "Pulling datagram with structIndex:" << lynxId->lynxId().structIndex << "and variableIndex:" << lynxId->lynxId().variableIndex;
-    // _uart->pullDatagram(lynxId->lynxId());
-}
-
-void BackEnd::startPeriodic(unsigned int interval, const QtLynxId * lynxId)
-{
-    // LynxId tmpId(structIndex);
-
-    if (lynxId->lynxId().structIndex < 0)
-    {
-        qDebug() << "Could not find datagram. Did you remember to add the struct?";
-        return;
-    }
-
-    qDebug() << "Starting periodic transmit at:" << interval << "ms interval";
-    // _uart->remotePeriodicStart(lynxId->lynxId(), interval);
-}
-
-void BackEnd::stopPeriodic(const QtLynxId * lynxId)
-{
-    // LynxId tmpId(structIndex);
-
-    if (lynxId->lynxId().structIndex < 0)
-    {
-        qDebug() << "Could not find datagram. Did you remember to add the struct?";
-        return;
-    }
-
-    qDebug() << "Stopping periodic transmit";
-    // _uart->remotePeriodicStop(lynxId->lynxId());
-}
 
 //LynxId BackEnd::findStructId(int variableIndex)
 //{
@@ -465,3 +430,19 @@ void BackEnd::fullscreenButtonClicked()
 //    qDebug() << "structIndex:" << tempId.structIndex;
 //    qDebug() << "variableIndex:" << tempId.variableIndex;
 //}
+
+void BackEnd::changeLocalDeviceId(char oldId, char newId)
+{
+    for (int i = 0; i < _deviceInfoList.count(); i++)
+    {
+        if (_deviceInfoList.at(i).deviceId == oldId)
+        {
+            _deviceInfoList[i].deviceId = newId;
+            emit changeDeviceId("0x" + QString::number((int(newId) & 0xff), 16));
+            return;
+        }
+    }
+
+    qDebug() << "A call for a devic id change was made, but the old id could not be found";
+    qDebug() << "Old id: 0x" + QString::number((int(oldId) & 0xff), 16) << "New id: 0x" + QString::number((int(newId) & 0xff), 16);
+}

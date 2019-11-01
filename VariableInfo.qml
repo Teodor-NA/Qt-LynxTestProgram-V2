@@ -6,6 +6,7 @@ import "HelperFunctions.js" as HF
 
 MyFrame {
     id: myFrame
+    property var portIndex: -1
     property var structIndex: -1
     property var variableIndex: -1
     property bool valid: ((variableId.structIndex >= 0) && (variableId.variableIndex >= 0))
@@ -21,6 +22,8 @@ MyFrame {
     property var minFontPixelSize: 10
     property bool selected: false
     property bool hovered: false
+
+//    Component.onCompleted: console.log("Port index: " + portIndex)
 
     onDynFontPixelSizeChanged:
     {
@@ -46,7 +49,7 @@ MyFrame {
 
     Connections
     {
-        target: lynx
+        target: lynxUart
         onNewDataReceived:
         {
             if (valueInput.activeFocus)
@@ -140,7 +143,7 @@ MyFrame {
                     enabled: (myFrame.enableInput && myFrame.valid) // && (myFrame.dataType != Lynx.E_Bool))
                     onAccepted:
                     {
-                        lynx.sendVariable(variableId, text)
+                        lynxUart.sendVariable(portIndex, variableId, text)
                         focus = false
                     }
 
@@ -164,7 +167,7 @@ MyFrame {
                             else
                             {
                                 valueInput.text = "True";
-                                lynx.sendVariable(variableId, "True")
+                                lynxUart.sendVariable(variableId, "True")
                             }
                         }
                     }

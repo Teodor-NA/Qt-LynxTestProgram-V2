@@ -5,6 +5,7 @@ import "HelperFunctions.js" as HF
 
 MyFrame {
     id: myFrame
+    property var portIndex: -1
     property string deviceName: "Not set"
     property string deviceId: "Not set"
     property string structCount: "Not set"
@@ -29,6 +30,16 @@ MyFrame {
     height: column.height
 //    color: selected ? Qt.darker("white", 1.15) : (hovered ? Qt.darker("white", 1.05) : "white")
     color: selected ? Qt.darker("white", 1.4) : (hovered ? Qt.darker("white", 1.05) : Qt.darker("white", 1.1))
+
+//    Label
+//    {
+//        padding: 5
+//        anchors.top: parent.top
+//        anchors.left: parent.left
+//        text: "Port index: " + portIndex
+//        font.pixelSize: fontPixelSize/2
+//        font.bold: true
+//    }
 
     Column
     {
@@ -71,7 +82,7 @@ MyFrame {
                     width: HF.evenWidthSpacing(parent)
                     text: deviceId
                     font.pixelSize: myFrame.fontPixelSize
-                    onAccepted: lynx.changeRemoteDeviceId(text)
+                    onAccepted: lynxUart.changeRemoteDeviceId(portIndex, deviceId, text)
                     onActiveFocusChanged:
                     {
                         if (activeFocus)

@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include "LynxStructure.h"
-#include "lynxuartqt.h"
+// #include "lynxuartqt.h"
 
 class QtLynxId : public QObject
 {
@@ -46,37 +46,13 @@ class QtLynxWrapper : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(bool uartConnected MEMBER _uartConnected NOTIFY uartConnectedChanged)
-
     LynxManager _lynx;
-    LynxList<LynxUartQt> _uart;
-
-    LynxInfo _receiveInfo;
-
-    QList<QSerialPortInfo> _portList;
-    QSerialPortInfo _selectedPort;
-
-    unsigned long _baudRate = 115200;
-
-    bool _uartConnected = false;
-
-    int _currentPortIndex = -1;
-
-    void setUartConnected(bool state) { if (state == _uartConnected) return; _uartConnected = state; emit uartConnectedChanged(); }
-
-    // Open uart port
-    int openUartPort();
-    // Close uart port
-    void closeUartPort();
 
 public:
-    explicit QtLynxWrapper(QObject *parent = nullptr);
+    explicit QtLynxWrapper(QObject *parent = nullptr, char deviceId = char(0xff), const LynxString & deviceName = "");
     ~QtLynxWrapper();
 
     LynxManager * lynxPointer() { return &_lynx; }
-    LynxUartQt * lynxUartPointer(int index);
-
-    void closeAllPorts();
 
     enum QtLynxType
     {
@@ -89,24 +65,14 @@ public:
     Q_ENUM(QtLynxType)
 
 signals:
-    void newDataReceived(const QtLynxId * lynxId);
-    void newDeviceInfoReceived(const LynxDeviceInfo & deviceInfo);
 
-    void addPort(const QString & port);
-    void clearPortList();
-
-    void uartConnectedChanged();
 
 public slots:
-    void readData();
-
     // Returns the description of the struct pointed to by lynxId. If lynxId points to a variable it returns the name of the containing struct
     QString getStructName(const QtLynxId * lynxId);
     // Returns the description of the variable pointed to by lynxId. If lynxId points to a struct an empty string is returned
     QString getVariableName(const QtLynxId * lynxId);
 
-    // Attempts to parse value to an appropriate type and sends it via uart
-    void sendVariable(const QtLynxId * lynxId, int deviceIndex, const QString & value);
     // Returns 0 if lynxId points to a string
     double getValueAsNumber(const QtLynxId * lynxId);
     // Returns any value type as a string
@@ -115,16 +81,6 @@ public slots:
     bool getValueAsBool(const QtLynxId * lynxId);
     // Returns the simplified data type (not init, number, string or bool)
     QtLynxWrapper::QtLynxType getDataType(const QtLynxId * lynxId);
-
-    // Change deviceId on the remote device
-    void changeRemoteDeviceId(const QString & deviceId, int deviceIndex);
-
-    // Scan for uart ports
-    void scanForUart();
-    // Select uart port
-    void selectPort(int portIndex);
-    // Connect button
-    void connectButtonClicked();
 
 
 };

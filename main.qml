@@ -12,7 +12,7 @@ Item
     anchors.fill: parent
     Connections
     {
-        target: lynx
+        target: lynxUart
         onAddPort: portListModel.append({ text: port })
         onClearPortList: { portListModel.clear(); portListModel.append({ text: "Select port" })}
     }
@@ -67,13 +67,13 @@ Item
                         if(pressed)
                         {
                             // backEnd.refreshPortList()
-                            lynx.scanForUart()
+                            lynxUart.scanForUart()
                             portComboBox.currentIndex = 0
                         }
                     }
                     onCurrentIndexChanged:
                     {
-                        lynx.selectPort(currentIndex - 1)
+                        lynxUart.selectPort(currentIndex - 1)
                     }
 
                     ToolTip.delay: 500
@@ -88,11 +88,11 @@ Item
                     id: connectButton
                     visible: topRibbon.selectButtonsVisible
                     enabled: portComboBox.currentIndex > 0
-                    filename: lynx.uartConnected ? "icons8-connected-50" : "icons8-disconnected-50"
-                    tooltip: lynx.uartConnected ? "Disconnect" : "Connect"
+                    filename: lynxUart.uartConnected ? "icons8-connected-50" : "icons8-disconnected-50"
+                    tooltip: lynxUart.uartConnected ? "Disconnect" : "Connect"
                     onClicked:
                     {
-                        lynx.connectButtonClicked();
+                        lynxUart.connectButtonClicked();
                     }
 
                 }
@@ -103,13 +103,13 @@ Item
                     visible: topRibbon.selectButtonsVisible
                     filename:"icons8-update-left-rotation-50"
                     tooltip: "Scan for devices"
-                    enabled: lynx.uartConnected
-                    onClicked: backEnd.scan()
+//                    enabled: lynxUart.uartConnected
+                    onClicked: lynxUart.scan()
                 }
 
                 IconButton
                 {
-                    id:saveToFile
+                    id: saveToFile
                     visible: topRibbon.graphButtonsVisible
                     filename:"icons8-save-50"
                     tooltip: "Save to CSV"

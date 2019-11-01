@@ -21,7 +21,8 @@ Item {
                     deviceNameIn: description,
                     deviceIdIn: id,
                     structCountIn: count,
-                    lynxVersionIn: version
+                    lynxVersionIn: version,
+                    portIndexIn: portIndex
                 }
             )
         }
@@ -35,6 +36,7 @@ Item {
             structModel.append
             (
                 {
+                    portIndexIn: portIndex,
                     structNameIn: structName,
                     structIdIn: structId,
                     variableCountIn: variableCount
@@ -51,6 +53,7 @@ Item {
             variableModel.append
             (
                 {
+                    portIndexIn: portIndex,
                     variableNameIn: variableName,
                     variableIndexIn: variableIndex,
                     variableTypeIn: variableType,
@@ -59,6 +62,10 @@ Item {
                     selectedIn: checked
                 }
             )
+        }
+        onChangeDeviceId:
+        {
+            deviceModel.get(backEnd.deviceInfoIndex).deviceIdIn = newDeviceId
         }
     }
 
@@ -94,7 +101,7 @@ Item {
                     backEnd.deviceInfoIndex = currentIndex
                     if (currentIndex >= 0)
                     {
-                        backEnd.selectDevice()
+                        backEnd.selectDevice(currentItem.portIndex)
                         structListView.currentIndex = -1
                     }
                 }
@@ -128,7 +135,7 @@ Item {
                     {
                         backEnd.structInfoIndex = currentIndex
                         if (currentIndex >= 0)
-                            backEnd.selectStruct()
+                            backEnd.selectStruct(currentItem.portIndex)
                         else
                             variableModel.clear()
                     }
@@ -162,7 +169,7 @@ Item {
                     text: "Pull struct"
                     font.pixelSize: 15
                     enabled: structId.valid
-                    onClicked: backEnd.pullStruct(structId)
+                    onClicked: lynxUart.pullStruct(structListView.currentItem.portIndex, structId)
                 }
             }
 
@@ -181,7 +188,7 @@ Item {
                     validator: IntValidator{}
                     font.pixelSize: 15
                     enabled: structId.valid
-                    onAccepted: { backEnd.startPeriodic(text, structId); text = "" }
+                    onAccepted: { lynxUart.startPeriodic(structListView.currentItem.portIndex, text, structId); text = "" }
                 }
 
                 Button
@@ -190,7 +197,7 @@ Item {
                     text: "Start"
                     font.pixelSize: 15
                     enabled: structId.valid
-                    onClicked: { backEnd.startPeriodic(periodicInput.text, structId); periodicInput.text = "" }
+                    onClicked: { lynxUart.startPeriodic(structListView.currentItem.portIndex, periodicInput.text, structId); periodicInput.text = "" }
                 }
 
                 Button
@@ -199,7 +206,7 @@ Item {
                     text: "Stop"
                     font.pixelSize: 15
                     enabled: structId.valid
-                    onClicked: backEnd.stopPeriodic(structId)
+                    onClicked: lynxUart.stopPeriodic(structListView.currentItem.portIndex, structId)
                 }
             }
         }
@@ -232,6 +239,7 @@ Item {
 
         ListElement
         {
+            portIndexIn: -1
             deviceNameIn: "No selection"
             deviceIdIn: "No selection"
             structCountIn: "No selection"
@@ -246,6 +254,7 @@ Item {
 
         ListElement
         {
+            portIndexIn: -1
             structNameIn: "No selection"
             structIdIn: "No selection"
             variableCountIn: "No selection"
@@ -259,6 +268,7 @@ Item {
 
         ListElement
         {
+            portIndexIn: -1
             variableNameIn: "No selection"
             variableTypeIn: "No selection"
             variableValueIn: "No selection"
@@ -274,6 +284,7 @@ Item {
 
         DeviceInfo
         {
+            portIndex: portIndexIn
             deviceName: deviceNameIn
             deviceId: deviceIdIn
             structCount: structCountIn
@@ -300,6 +311,7 @@ Item {
 
         StructInfo
         {
+            portIndex: portIndexIn
             structName: structNameIn
             structId: structIdIn
             variableCount: variableCountIn
@@ -324,6 +336,7 @@ Item {
         VariableInfo
         {
             id: varInfo
+            portIndex: portIndexIn
             structIndex: structId.structIndex
             variableIndex: index
             variableName: variableNameIn

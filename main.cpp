@@ -4,6 +4,7 @@
 #include <QQmlApplicationEngine>
 
 #include "qtlynxwrapper.h"
+#include "qtlynxuartwrapper.h"
 #include "backend.h"
 #include "scopeserver.h"
 
@@ -16,18 +17,21 @@ int main(int argc, char *argv[])
 
     QQuickView viewer;
 
-    QtLynxWrapper lynx(&viewer);
+    QtLynxWrapper lynx(&viewer, 0x25, "Device 1");
+    QtLynxUartWrapper lynxUart(lynx.lynxPointer(), &viewer);
     BackEnd backEnd(lynx.lynxPointer(), &viewer);
     ScopeServer scopeServer(lynx.lynxPointer(), &viewer);
 
     viewer.rootContext()->setContextProperty("lynx", &lynx);
+    viewer.rootContext()->setContextProperty("lynxUart", &lynxUart);
     viewer.rootContext()->setContextProperty("backEnd", &backEnd);
     viewer.rootContext()->setContextProperty("scopeServer", &scopeServer);
 
     QObject::connect(viewer.engine(), &QQmlEngine::quit, &viewer, &QWindow::close);
     // QObject::connect(&lynx, SIGNAL(newDataReceived(const QtLynxId *)), &backEnd, SLOT(newDataReceived(const QtLynxId *)));
-    QObject::connect(&lynx, SIGNAL(newDeviceInfoReceived(const LynxDeviceInfo &)), &backEnd, SLOT(newDeviceInfoReceived(const LynxDeviceInfo &)));
+    QObject::connect(&lynxUart, SIGNAL(newDeviceInfoReceived(const LynxDeviceInfo &, int)), &backEnd, SLOT(newDeviceInfoReceived(const LynxDeviceInfo &, int)));
     QObject::connect(&backEnd, SIGNAL(getIdList()), &scopeServer, SLOT(getIdList()));
+    QObject::connect(&lynxUart, SIGNAL(changeLocalDeviceId(char, char)), &backEnd, SLOT(changeLocalDeviceId(char, char)));
 
     qmlRegisterType<QtLynxId>("lynxlib", 1, 0, "LynxId");
     qRegisterMetaType<QtLynxId*>("const QtLynxId*");

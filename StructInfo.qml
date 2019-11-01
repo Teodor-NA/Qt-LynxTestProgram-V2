@@ -5,6 +5,7 @@ import "HelperFunctions.js" as HF
 
 MyFrame {
     id: myFrame
+    property var portIndex: -1
     property string structName: "Not set"
     property string structId: "Not set"
     property string variableCount: "Not set"
