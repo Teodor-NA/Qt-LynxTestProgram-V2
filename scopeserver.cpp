@@ -6,7 +6,7 @@
 #include <QtCharts/QAreaSeries>
 ScopeServer::ScopeServer(LynxManager * lynx, QObject *parent) : QObject(parent), _lynx(lynx)
 {
-    _haltChartRefresh = false;
+    _haltChartRefresh = true;
     //_seriesCreated = false;
     _historicData = false;
 
@@ -14,55 +14,36 @@ ScopeServer::ScopeServer(LynxManager * lynx, QObject *parent) : QObject(parent),
     _haltLogging = true;
 
     newDataTimer = new QTimer(this);
-    connect(newDataTimer, SIGNAL(timeout()), this, SLOT(newDataRecived()),Qt::UniqueConnection);
+    connect(newDataTimer, SIGNAL(timeout()), this, SLOT(updateChart()),Qt::UniqueConnection);
     newDataTimer->start(10);
 
 }
-//void ScopeServer::createDemo()
-//{
-//    // SETUP LOGGING
-//    signalInformation.append(loggerInfo{0,"Voltage","","red"});
-//    signalInformation.append(loggerInfo{1,"Current","","blue"});
-//    signalInformation.append(loggerInfo{2,"Power","","red"});
-//    signalInformation.append(loggerInfo{3,"Flux","","orange"});
-//    signalInformation.append(loggerInfo{4,"Pressure","","black"});
-
-//    QVector<QPointF> points;
-//    points.reserve(100000);
-
-//    logger.append(points);
-//    logger.append(points);
-//    logger.append(points);
-//    logger.append(points);
-//    logger.append(points);
-//}
-
-void ScopeServer::newDataRecived()
+void ScopeServer::updateChart()
+{
+    if(!_haltChartRefresh)
+    {
+        emit refreshChart();
+    }
+}
+void ScopeServer::newDataRecived(const QtLynxId *id)
 {
     if (signalInformation.count() < 1)
         return;
 
     QDateTime momentInTime = QDateTime::currentDateTime();
-
-    for (int i = 0; i < signalInformation.count(); i++)
+    LynxId tempId;
+    for (int j = 0; j < signalInformation.count(); j++)
     {
-        logger[i].append(QPointF(momentInTime.toMSecsSinceEpoch(), _lynx->getValue(signalInformation.at(i).id)));
+        tempId = signalInformation.at(j).id;
+
+        if(id->lynxId().structIndex == tempId.structIndex)
+        {
+            if(id->lynxId().variableIndex < 0 || id->lynxId().variableIndex == tempId.variableIndex)
+            {
+                logger[j].append(QPointF(momentInTime.toMSecsSinceEpoch(), _lynx->getValue(tempId)));
+            }
+        }
     }
-
-//    if(!_haltLogging)
-//    {
-//        logger[0].append(QPointF(momentInTime.toMSecsSinceEpoch(), 10* qSin(momentInTime.toMSecsSinceEpoch()/1000.0*6.0/10.0)+double(1*QRandomGenerator::global()->generateDouble())));
-//        logger[1].append(QPointF(momentInTime.toMSecsSinceEpoch(), 10*qCos(momentInTime.toMSecsSinceEpoch()/1000.0*6/10)+1*QRandomGenerator::global()->generateDouble()));
-//        logger[2].append(QPointF(momentInTime.toMSecsSinceEpoch(), 7*qSin(momentInTime.toMSecsSinceEpoch()/1000.0*6/9)+0.2*QRandomGenerator::global()->generateDouble()));
-//        logger[3].append(QPointF(momentInTime.toMSecsSinceEpoch(), 5*qCos(momentInTime.toMSecsSinceEpoch()/1000.0*6/7)+0.1*QRandomGenerator::global()->generateDouble()));
-//        logger[4].append(QPointF(momentInTime.toMSecsSinceEpoch(), 4*qSin(qCos(momentInTime.toMSecsSinceEpoch()/1000.0*6/3)+0.4*QRandomGenerator::global()->generateDouble())));
-//    }
-
-    if(!_haltChartRefresh)
-    {
-        emit refreshChart();
-    }
-
 }
 
 void ScopeServer::calcAxisIndex(qint64 msMin, qint64 msMax)
@@ -90,11 +71,10 @@ void ScopeServer::calcAxisIndex(qint64 msMin, qint64 msMax)
 
     for (int i = 0; i < logger.count(); i++)
     {
+        if(!signalInformation.at(i).visibility)
+            continue;
         startIndex = 0;
         endIndex = logger.at(i).count();
-
-        // closestStart = qint64(logger.at(i).at(startIndex).x());
-        // closestEnd = qint64(logger.at(i).at(endIndex).x());
 
         for (int j = (logger.at(i).count() - 1); j >= 0; j--)
         {
@@ -144,34 +124,6 @@ void ScopeServer::calcAxisIndex(qint64 msMin, qint64 msMax)
 
 }
 
-//void ScopeServer::calcMinMaxY()
-//{
-//    double min_=0;
-//    double max_=0;
-
-//    for (int i = 0; i < logger.count(); i++)
-//    {
-//        //double delta = logger[0].at(logger[i].count()-1).x()-logger[i].at(logger[i].count()-2).x();
-//        QList<double> liste;
-//        liste.reserve(abs(_secondIndex-_firstIndex));
-//        for (int n=_firstIndex;n<_secondIndex;n++)
-//        {
-//            liste.append(logger[i].at(n).y());
-
-//        }
-//        auto mm = std::minmax_element(liste.begin(), liste.end());
-//        qDebug()<<"min: "<< *mm.first<<"Max: "<<*mm.second;
-//        if(*mm.first < min_)
-//            min_ = *mm.first;
-//        if(*mm.second > max_)
-//            max_ = *mm.second;
-//    }
-
-//    //qDebug() << "min: "<<*mm.first <<" max " << *mm.second;
-//    frameMin = min_;
-//    frameMax = max_;
-//}
-
 void ScopeServer::writeToCSV(const QString &filepath)
 {
     // Open csv-file
@@ -181,32 +133,50 @@ void ScopeServer::writeToCSV(const QString &filepath)
 
     QFile file(QString::fromUtf8(x.c_str()));
 
-    //QString path = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-    //QDir dir;
-    //QFile file(path + "\\file.csv");
+
     file.remove();
     if ( !file.open(QIODevice::ReadWrite | QIODevice::Text) )
     {
         qDebug() << file.errorString();
         return ;
     }
-
+    qDebug()<<"File created or it exits";
     // Write data to file
     QTextStream stream(&file);
     QString separator(",");
-    stream << QString("Time");
-    for (int n = 0; n < logger.size(); ++n)
-    {
-        stream<<separator + getSignalText(n);
-    }
-    stream << separator<<endl;
 
-    for (int i = 0; i < logger.at(0).size()-1; ++i)
+    for (int n = 0; n < logger.count(); n++)
     {
-        stream << QDateTime::fromMSecsSinceEpoch(qint64(logger.at(0).at(i).x())).toString(Qt::ISODateWithMs);
-        for (int n = 0; n < logger.size(); ++n)
+        stream << QString("Time") + separator;
+        stream<< getStructName(n) + ":" + getSignalText(n)  + separator;
+        qDebug()<<"signal name: "<<getSignalText(n);
+    }
+    stream << endl;
+    int maxCount=0;
+    for (int j=0;j<logger.count();j++)
+    {
+        qDebug()<<"signal name: "<<getSignalText(j) <<" has count "<<logger.at(j).count();
+        if (logger.at(j).count() > maxCount)
         {
-            stream << separator << QString::number(logger.at(n).at(i).y());
+
+            maxCount = logger.at(j).count();
+        }
+
+    }
+
+    for (int i = 0; i < maxCount; i++)//Line number
+    {
+
+        for (int n = 0; n < logger.count(); n++)//Colum numer
+        {
+            if(i<logger.at(n).count() )
+            {
+                stream << QDateTime::fromMSecsSinceEpoch(qint64(logger.at(n).at(i).x())).toString(Qt::ISODateWithMs) + separator;
+                stream <<  QString::number(logger.at(n).at(i).y()) + separator;
+            }
+            else {
+                stream << separator << separator;
+            }
         }
         stream << endl;
     }
@@ -218,46 +188,75 @@ void ScopeServer::writeToCSV(const QString &filepath)
 void ScopeServer::readFromCSV(const QString & filepath)
 {
     // Open csv-file
+
     pauseLogging();
-    pauseChartviewRefresh();
-    //QString path = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-    //QDir dir;
-    //QFile file(path + "\\file.csv");
+    //pauseChartviewRefresh();
     std::string x =filepath.toStdString().substr(filepath.toStdString().find("///") + 3);
 
     QFile file(QString::fromUtf8(x.c_str()));
-    if (!file.open(QIODevice::ReadOnly)) {
-                    qDebug() << file.errorString();
-                    return ;
-                }
-    else {
-        qDebug()<<"File read";
-    }
-    QStringList wordList;
-    logger.clear();
-    int colums = file.readLine().split(',').count()-1;
-    qDebug()<<"Colums: "<<colums;
-    QVector<QPointF> points;
-
-    for (int c=0;c<colums-1;c++)
+    if (!file.open(QIODevice::ReadOnly))
     {
-        logger.append(points);
+        qDebug() << file.errorString();
+        return ;
     }
+    else {
+        qDebug()<<"File read sucessfully";
+    }
+    QByteArray firstline = file.readLine();
+    int colums = firstline.split(',').count()-1;
+
+    qDebug()<<"First line: "<<firstline;
+    qDebug()<<"Colums: "<<colums;
+    int nSignals = colums /2;
+    qDebug()<<"Signals: "<<nSignals;
+    logger.clear();
+
+
+    QStringList wordList;
+    QVector<QPointF> points;
+    signalInformation.clear();
+    LynxId tmpId;
+    for (int c=0;c<nSignals;c++)
+    {
+
+        logger.append(points);
+        QString structAndSignalName =firstline.split(',').at(2*c+1);
+        qDebug()<<structAndSignalName.split(":").first();
+        qDebug()<<structAndSignalName.split(":").last();
+        signalInformation.append(LoggerInfo{signalInformation.count(), tmpId, structAndSignalName.split(":").last(), "", "",true,structAndSignalName.split(":").first()});
+    }
+
     while (!file.atEnd())
     {
         QByteArray line = file.readLine();
-        QByteArray xpoint = line.split(',') .first();
-        QDateTime Date = QDateTime::fromString(xpoint,Qt::ISODateWithMs);
-        //qDebug()<<line;
-        for (int n=0;n<colums-1;n++)
-        {
-            logger[n].append(QPointF(qint64(Date.toMSecsSinceEpoch()),line.split(',').at(n+1).toDouble()));
-        }
-    }
 
+
+
+        qDebug()<<line;
+        for (int n=0;n<colums/2;n++)
+        {
+
+            QByteArray xpoint = line.split(',').at(2*n);
+            if(xpoint != "")
+            {
+                QDateTime Date = QDateTime::fromString(xpoint,Qt::ISODateWithMs);
+
+                logger[n].append(QPointF(qint64(Date.toMSecsSinceEpoch()),line.split(',').at(2*n+1).toDouble()));
+
+            }
+
+        }
+
+    }
+    for (int i=0;i<logger.count();i++)
+    {
+        qDebug()<<"logger at "<<i<<" is " <<logger.at(i).count();
+
+    }
     _historicData=true;
-    frameMin = 0;
-    frameMax = 0;
+//    frameMin = 0;
+//    frameMax = 0;
+    pauseChartviewRefresh();
     emit createSeries();
     emit refreshChart();
     emit reScale();
@@ -298,6 +297,7 @@ int ScopeServer::changePlotItem(int structIndex, int variableIndex, bool checked
     }
 
     QString name = QString(_lynx->getVariableName(tmpId));
+    QString stuctName = QString(_lynx->getStructName(tmpId));
 
     for (int i = 0; i < signalInformation.count(); i++)
     {
@@ -326,7 +326,7 @@ int ScopeServer::changePlotItem(int structIndex, int variableIndex, bool checked
         return 0;
     }
 
-    signalInformation.append(LoggerInfo{signalInformation.count(), tmpId, name, "", ""});
+    signalInformation.append(LoggerInfo{signalInformation.count(), tmpId, name, "", "",true,stuctName});
 
     QVector<QPointF> points;
     points.reserve(100000);
@@ -374,4 +374,45 @@ int ScopeServer::getParentIndex(const QString &structname, int signalIndex)
 
     _parentList.append(parentList{signalIndex,structname});
     return (_parentList.last().index);
+}
+void ScopeServer::checkIt(int index,bool parent,bool checked)
+{
+    _checkBoxList[index].checked = checked;
+    qDebug()<<"function checkIt()";
+    int nTrue = 0;
+    int nFalse = 0;
+    qDebug()<<"index is: "<<index<<" and is parentIndex is: "<<_checkBoxList.at(index).parentIndex << " while checked is: "<<checked;
+     qDebug()<<"";
+    //qDebug()<<"count is: "<<_checkBoxList.count();
+    if(parent)
+    {
+        //qDebug()<<"click is a parent and checked is:"<<checked;
+        for (int n=0;n<_checkBoxList.count();n++)
+        {
+            if(_checkBoxList.at(n).parentIndex==_checkBoxList.at(index).parentIndex)
+            {
+                //qDebug()<<"setting child index: "<<n <<"with checked"<<checked;
+                emit updateChild(n,checked);
+                emit updateChild(n,!checked);
+                emit updateChild(n,checked);
+            }
+        }
+    }
+    else //child
+    {
+        for (int i=0;i<_checkBoxList.count();i++)
+        {
+
+            if(_checkBoxList.at(i).parentIndex == _checkBoxList.at(index).parentIndex && i!=_checkBoxList.at(index).parentIndex)
+            {
+                _checkBoxList.at(i).checked ? nTrue++ : nFalse++;
+            }
+        }
+
+        if(nTrue==0)
+             emit setParent(_checkBoxList.at(index).parentIndex,false);
+        else
+            emit setParent(_checkBoxList.at(index).parentIndex,true);
+
+    }
 }
