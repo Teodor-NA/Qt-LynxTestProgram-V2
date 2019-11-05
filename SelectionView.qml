@@ -65,7 +65,8 @@ Item {
         }
         onChangeDeviceId:
         {
-            deviceModel.get(backEnd.deviceInfoIndex).deviceIdIn = newDeviceId
+            // deviceModel.get(backEnd.deviceInfoIndex).deviceIdIn = qsTr(newDeviceId)
+            deviceModel.setProperty(backEnd.deviceInfoIndex, "deviceIdIn", newDeviceId)
         }
     }
 

@@ -82,7 +82,14 @@ MyFrame {
                     width: HF.evenWidthSpacing(parent)
                     text: deviceId
                     font.pixelSize: myFrame.fontPixelSize
-                    onAccepted: lynxUart.changeRemoteDeviceId(portIndex, deviceId, text)
+                    onAccepted:
+                    {
+                        console.log(typeof(portIndex))
+                        console.log(typeof(deviceId))
+                        console.log(typeof(text))
+                        lynxUart.changeRemoteDeviceId(portIndex, qsTr(deviceId), qsTr(text))
+                        focus = false
+                    }
                     onActiveFocusChanged:
                     {
                         if (activeFocus)
