@@ -56,15 +56,26 @@ void ScopeServer::calcAxisIndex(qint64 msMin, qint64 msMax)
         qDebug() << "Nothing to scale.";
         return;
     }
-    if (logger.at(0).count() < 1)
+
+
+    double maxValue; //= logger.at(0).at(0).y();
+    double minValue; //= logger.at(0).at(0).y();
+    bool signalExists=false;
+    for (int i=0;i<logger.count();i++)
+    {
+        if(signalInformation.at(i).visibility)
+        {
+            maxValue = logger.at(i).at(0).y();
+            minValue = logger.at(i).at(0).y();
+            signalExists=true;
+        }
+
+    }
+    if (!signalExists)
     {
         qDebug() << "A signal exists, but there is nothing in it.";
         return;
     }
-
-    double maxValue = logger.at(0).at(0).y();
-    double minValue = logger.at(0).at(0).y();
-
     int startIndex, endIndex;
 
     // qint64 closestStart, closestEnd;
@@ -221,8 +232,8 @@ void ScopeServer::readFromCSV(const QString & filepath)
 
         logger.append(points);
         QString structAndSignalName =firstline.split(',').at(2*c+1);
-        qDebug()<<structAndSignalName.split(":").first();
-        qDebug()<<structAndSignalName.split(":").last();
+//        qDebug()<<structAndSignalName.split(":").first();
+//        qDebug()<<structAndSignalName.split(":").last();
         signalInformation.append(LoggerInfo{signalInformation.count(), tmpId, structAndSignalName.split(":").last(), "", "",true,structAndSignalName.split(":").first()});
     }
 
@@ -232,7 +243,7 @@ void ScopeServer::readFromCSV(const QString & filepath)
 
 
 
-        qDebug()<<line;
+//        qDebug()<<line;
         for (int n=0;n<colums/2;n++)
         {
 
@@ -336,8 +347,8 @@ int ScopeServer::changePlotItem(int structIndex, int variableIndex, bool checked
     // signalInformation.last().id = tmpId;
     // signalInformation.last().name = name;
 
-    qDebug() << "Item" << signalInformation.last().name << "with structIndex:" << signalInformation.last().id.structIndex << "and variableIndex:" << signalInformation.last().id.variableIndex << "was added";
-    qDebug() << "Count is now:" << signalInformation.count();
+//    qDebug() << "Item" << signalInformation.last().name << "with structIndex:" << signalInformation.last().id.structIndex << "and variableIndex:" << signalInformation.last().id.variableIndex << "was added";
+//    qDebug() << "Count is now:" << signalInformation.count();
 
     emit createSeries();
 
@@ -365,12 +376,12 @@ int ScopeServer::getParentIndex(const QString &structname, int signalIndex)
     {
         if (_parentList.at(i).structName==structname)
         {
-            qDebug()<<"returning index: "<<i<< " which corr. to the structname: "<<structname;
+            //qDebug()<<"returning index: "<<i<< " which corr. to the structname: "<<structname;
             return _parentList.at(i).index;
         }
 
     }
-    qDebug()<<"appending new index: "<<signalIndex<< " which corr. to the structname: "<<structname;
+    //qDebug()<<"appending new index: "<<signalIndex<< " which corr. to the structname: "<<structname;
 
     _parentList.append(parentList{signalIndex,structname});
     return (_parentList.last().index);
@@ -378,11 +389,11 @@ int ScopeServer::getParentIndex(const QString &structname, int signalIndex)
 void ScopeServer::checkIt(int index,bool parent,bool checked)
 {
     _checkBoxList[index].checked = checked;
-    qDebug()<<"function checkIt()";
+    //qDebug()<<"function checkIt()";
     int nTrue = 0;
     int nFalse = 0;
-    qDebug()<<"index is: "<<index<<" and is parentIndex is: "<<_checkBoxList.at(index).parentIndex << " while checked is: "<<checked;
-     qDebug()<<"";
+//    qDebug()<<"index is: "<<index<<" and is parentIndex is: "<<_checkBoxList.at(index).parentIndex << " while checked is: "<<checked;
+//     qDebug()<<"";
     //qDebug()<<"count is: "<<_checkBoxList.count();
     if(parent)
     {

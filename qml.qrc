@@ -54,5 +54,6 @@
         <file>SelectionWindowForm.ui.qml</file>
         <file>StructInfo.qml</file>
         <file>VariableInfo.qml</file>
+        <file>icons/icons8-cat-butt-100.png</file>
     </qresource>
 </RCC>

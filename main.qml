@@ -8,8 +8,15 @@ import lynxlib 1.0
 
 Item
 {
+    id:mainItem
     visible: true
     anchors.fill: parent
+    property bool colorMode: false
+    Rectangle{
+        anchors.fill: parent
+        id:background
+    }
+
     Connections
     {
         target: lynxUart
@@ -163,19 +170,21 @@ Item
                     filename: "icons8-pause-50"
                     tooltip: "Live view"
                     onClicked:{
-                        if(resumeRealTimer)
-                        {
-                            resumeRealTimer=false
-                            scopeView.deltaX = 10000 //Reset default
-                            scopeServer.resumeRealtime()
-                        }
+//                        if(resumeRealTimer)
+//                        {
+//                            resumeRealTimer=false
+//                            scopeView.deltaX = 10000 //Reset default
+//                            scopeServer.resumeRealtime()
+//                        }
 
-                        else if (enabled){
+                        if (enabled)
+                        {
                             enabled = false
                             filename = "icons8-pause-50"
                             scopeServer.resumeChartviewRefresh();
                         }
-                        else{
+                        else
+                        {
                             enabled = true
                             filename = "icons8-play-50"
                             scopeServer.pauseChartviewRefresh();
@@ -190,6 +199,7 @@ Item
                         scopeView.screenShot()
                     }
                 }
+
                 IconButton{
                     visible: topRibbon.graphButtonsVisible
                     filename: "icons8-expand-50"
@@ -227,12 +237,43 @@ Item
                 padding: topRibbonLeft.padding
                 anchors.right: parent.right
 
+
+                IconButton
+                {
+                    filename: "icons8-info-50"
+                    tooltip: "About"
+                    onClicked: popup.open()
+                }
+                IconButton
+                {
+                    filename: "icons8-day-and-night-50"
+                    tooltip: "Dark/Light mode"
+                    onClicked: {
+
+                        colorMode ? colorMode=false:colorMode=true
+
+                        scopeView.changeView(colorMode)
+                        if(colorMode)
+                        {
+                            background.color =  Qt.rgba(44/255,45/255,55/255,1)
+                            background2.color = Qt.rgba(44/255,45/255,55/255,1)
+                            background3.color = Qt.rgba(44/255,45/255,55/255,1)
+                        }
+                        else
+                        {
+                            background.color ="white"
+                            background2.color ="white"
+                            background3.color ="white"
+                        }
+                    }
+                }
                 IconButton
                 {
                     filename: "icons8-full-screen-50"
                     tooltip: "Toggle fullscreen/windowed"
                     onClicked: backEnd.fullscreenButtonClicked()
                 }
+
 
                 IconButton
                 {
@@ -245,7 +286,50 @@ Item
 
             }
         }
+        Rectangle
+        {
+            anchors.centerIn: parent
+            Popup {
+                   id: popup
+                   anchors.centerIn: parent
+                   width: 600
+                   height: 300
+                   modal: true
+                   focus: true
+                   closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
+                   Column
+                   {
+                       padding: 20
+                       spacing: 10
+                       Text{
 
+                           text: "LynxLogger"
+                           font.pointSize: 24
+                       }
+                       Text{
+
+                           text: "Version: " + scopeServer.getLynxVersion()
+                           font.pointSize: 18
+                       }
+                       Text{
+                           width: 300
+                           wrapMode: Text.WordWrap
+                           text: "The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE."
+                           font.pointSize: 12
+                       }
+                    }
+                   Image{
+
+                       width: 100
+                       height: 100
+                       anchors.verticalCenter: parent.verticalCenter
+                       anchors.right: parent.right
+                       anchors.rightMargin: 60
+                       source:"icons/icons8-cat-butt-100"
+                   }
+
+               }
+        }
         SwipeView
         {
             id: swipeWindow
@@ -253,20 +337,33 @@ Item
             width: parent.width
             currentIndex: tabBar.currentIndex
             interactive: false
+
+
             SelectionWindowForm
             {
+                Rectangle{
+                    id:background2
+                    anchors.fill: parent
+
+                }
                 id: selectionPage
+
                 SelectionView
                 {
                     id: selectionView
                     anchors.fill: parent
+
                 }
 
             }
             GraphWindowForm
             {
                 id: graphPage
+                Rectangle{
+                    id:background3
+                    anchors.fill: parent
 
+                }
                 ScopeView
                 {
                     id: scopeView
@@ -340,8 +437,8 @@ Item
         onAccepted:
         {
             scopeServer.readFromCSV(fileDialogRead.fileUrl)
-            playButton.resumeRealTimer = true;
-            playButton.filename = "icons8-realtime-50"
+            //playButton.resumeRealTimer = true;
+            //playButton.filename = "icons8-realtime-50"
 
         }
         onRejected:
