@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     viewer.rootContext()->setContextProperty("scopeServer", &scopeServer);
 
     QObject::connect(viewer.engine(), &QQmlEngine::quit, &viewer, &QWindow::close);
-    QObject::connect(&lynx,SIGNAL(newDataReceived(const QtLynxId *)),&scopeServer,SLOT(newDataRecived(const QtLynxId *)));
+    QObject::connect(&lynxUart,SIGNAL(newDataReceived(const QtLynxId *)),&scopeServer,SLOT(newDataRecived(const QtLynxId *)));
     // QObject::connect(&lynx, SIGNAL(newDataReceived(const QtLynxId *)), &backEnd, SLOT(newDataReceived(const QtLynxId *)));
     QObject::connect(&lynxUart, SIGNAL(newDeviceInfoReceived(const LynxDeviceInfo &, int)), &backEnd, SLOT(newDeviceInfoReceived(const LynxDeviceInfo &, int)));
     QObject::connect(&backEnd, SIGNAL(getIdList()), &scopeServer, SLOT(getIdList()));
