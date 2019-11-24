@@ -70,6 +70,7 @@ public slots:
     QString getLynxVersion() {return LYNX_VERSION;}
     void updateChart();
     bool signalIsVisible(int signalIndex) { return signalInformation.at(signalIndex).visibility;}
+    void clear();
     void clearParents()
     {
         _checkBoxList.clear();

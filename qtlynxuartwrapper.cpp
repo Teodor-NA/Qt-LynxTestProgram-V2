@@ -97,6 +97,7 @@ int QtLynxUartWrapper::openUartPort()
     if (success)
     {
         qDebug() << "Port successfully opened";
+
         // QObject::connect(&(_uart[_currentPortIndex].portContainer()), SIGNAL(readyRead(int)), this, SLOT(readData(int)));
         setUartConnected(true);
         return _portIndex;
@@ -142,11 +143,12 @@ void QtLynxUartWrapper::readData(int portIndex)
         {
             emit newDeviceInfoReceived(_uart[portIndex].lynxDeviceInfo(), portIndex);
         }
+        else if(_receiveInfo.state > LynxLib::eErrors)
+        {
+            qDebug() << "New information was received with error:" << LynxTextList::lynxState(_receiveInfo.state);
+        }
     }
-    else if(_receiveInfo.state > LynxLib::eErrors)
-    {
-        qDebug() << "New information was received with error:" << LynxTextList::lynxState(_receiveInfo.state);
-    }
+
 
 //    for (int i = 0; i < _uart.count(); i++)
 //     {

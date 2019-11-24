@@ -55,5 +55,6 @@
         <file>StructInfo.qml</file>
         <file>VariableInfo.qml</file>
         <file>icons/icons8-cat-butt-100.png</file>
+        <file>icons/icons8-clear-symbol-50.png</file>
     </qresource>
 </RCC>

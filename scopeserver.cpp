@@ -18,6 +18,15 @@ ScopeServer::ScopeServer(LynxManager * lynx, QObject *parent) : QObject(parent),
     newDataTimer->start(10);
 
 }
+void ScopeServer::clear()
+{
+    for (int j = 0; j < signalInformation.count(); j++)
+    {
+        logger[j].clear();
+        //emit reScale();
+        //updateChart();
+    }
+}
 void ScopeServer::updateChart()
 {
     if(!_haltChartRefresh)
@@ -63,7 +72,7 @@ void ScopeServer::calcAxisIndex(qint64 msMin, qint64 msMax)
     bool signalExists=false;
     for (int i=0;i<logger.count();i++)
     {
-        if(signalInformation.at(i).visibility)
+        if(signalInformation.at(i).visibility && logger.at(i).count()>0)
         {
             maxValue = logger.at(i).at(0).y();
             minValue = logger.at(i).at(0).y();
@@ -279,18 +288,22 @@ void ScopeServer::update(QAbstractSeries *series,int index)
     if (series)
     {
         QXYSeries *xySeries = static_cast<QXYSeries *>(series);
-        QVector<QPointF> points = logger.at(index);
-        if(points.last().y()>max)
+        if(logger.at(index).count()>0)
         {
-            max=points.last().y();
-        }
-        if(points.last().y()<min)
-        {
-            min=points.last().y();
+            QVector<QPointF> points = logger.at(index);
+            if(points.last().y()>max)
+            {
+                max=points.last().y();
+            }
+            if(points.last().y()<min)
+            {
+                min=points.last().y();
 
+            }
+            // Use replace instead of clear + append, it's optimized for performance
+            xySeries->replace(points);
         }
-        // Use replace instead of clear + append, it's optimized for performance
-        xySeries->replace(points);
+
 
 
     }

@@ -199,6 +199,14 @@ Item
                         scopeView.screenShot()
                     }
                 }
+                IconButton{
+                    visible: topRibbon.graphButtonsVisible
+                    filename: "icons8-clear-symbol-50"
+                    tooltip: "Clear chart"
+                    onClicked: {
+                        scopeServer.clear()
+                    }
+                }
 
                 IconButton{
                     visible: topRibbon.graphButtonsVisible

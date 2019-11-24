@@ -109,16 +109,18 @@ Item {
                                         radius: 2
                                         anchors.margins: 4
                                         anchors.fill: parent
-                                        Text {
-                                            id: checkBoxText
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            anchors.left: parent.right
-                                            anchors.leftMargin: 10
-                                            text: name
-                                            width: 70
-                                            wrapMode: Text.WordWrap
-                                            font.pixelSize: 12
-                                        }
+
+                                    }
+                                    Text {
+                                        visible: true
+                                        id: checkBoxText
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        anchors.left: parent.right
+                                        anchors.leftMargin: 10
+                                        text: name
+                                        width: 70
+                                        wrapMode: Text.WordWrap
+                                        font.pixelSize: 12
                                     }
 
 
@@ -128,14 +130,7 @@ Item {
 
                         scopeServer.updateList(index,isParent,checked)
 
-//                        if(checked && varindex>=0)
-//                        {
-//                            chartView.series(varindex).visible=true
-//                        }
-//                        else if(!checked && varindex>=0)
-//                        {
-//                            chartView.series(varindex).visible=false
-//                        }
+
                     }
                     onClicked:
                     {
@@ -154,7 +149,7 @@ Item {
         width: parent.width*0.9
         anchors.right: parent.right
         animationOptions: ChartView.SeriesAnimations //NoAnimation
-        theme: ChartView.ChartThemeDark
+        theme: ChartView.ChartThemeLight
 
         antialiasing: true
         legend.visible: false
@@ -463,7 +458,7 @@ Item {
                                          name:scopeServer.getStructName(n),
                                          chIn:true,
                                           //varindexin:-1,
-                                         seriesColorIn:series1.color.toString(),
+                                         seriesColorIn:"gray",//series1.color.toString(),
                                          useTristate:false,
                                          isParentIn:true,
                                           indexIn:index,
