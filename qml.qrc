@@ -56,5 +56,7 @@
         <file>VariableInfo.qml</file>
         <file>icons/icons8-cat-butt-100.png</file>
         <file>icons/icons8-clear-symbol-50.png</file>
+        <file>FlowView.qml</file>
+        <file>FlowViewForm.ui.qml</file>
     </qresource>
 </RCC>

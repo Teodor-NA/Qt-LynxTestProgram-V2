@@ -378,6 +378,13 @@ Item
                     anchors.fill: parent
                 }
             }
+            FlowViewForm
+            {
+                FlowView
+                {
+                    anchors.fill: parent
+                }
+            }
 
         }
 
@@ -409,6 +416,11 @@ Item
             TabButton
             {
                 text: "View graphs"
+                font.pixelSize: 15
+            }
+            TabButton
+            {
+                text: "View flow"
                 font.pixelSize: 15
             }
         }
